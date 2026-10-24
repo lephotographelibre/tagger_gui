@@ -1,0 +1,208 @@
+bug  -->Erreur lors de l'application des tags pour 02 - Le retour de Thémire; Prélude Bergers ranimez vos musettes....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+
+▶ Démarrage du tagger…
+[CMD] /home/jm/.pyenv/versions/3.11.13/envs/venv_tagger/bin/python /home/jm/PycharmProjects/tagger_gui/src/tagger.py 3 298490 046258 -f /home/jm/Audio/MP3/ --loglevel INFO -g Baroque -i Ensemble Les Festes Galantes
+2026-10-13 09:23:22,394 - INFO - ------ Demarrage barcode V2.4 -----------------------------------------
+2026-10-13 09:23:22,394 - INFO - ------ Variables Globales : 3 298490 046258 + /home/jm/Audio/MP3/ + args.compositeur= False + GENRE = Baroque + RELEASE_ID = default + INTERPRETE = Ensemble Les Festes Galantes ----------
+2026-10-13 09:23:22,410 - INFO - - set_read_write_permissions() - Modification des permissions pour les fichiers dans le repertoire : /home/jm/Audio/MP3/
+
+2026-10-13 09:23:22,509 - INFO - - generate_tags_for_directory () - Processing directory: /home/jm/Audio/MP3/
+2026-10-13 09:23:22,537 - INFO - - Verifications initiales missing ID3 tracknumber - Tagging complete.
+2026-10-13 09:23:22,870 - INFO - --- main() - Release URL selectionnee : https://api.discogs.com/releases/11547182
+2026-10-13 09:23:22,871 - INFO - --- main() - Recherche release de la Release https://api.discogs.com/releases/11547182 -----------------------------------------
+2026-10-13 09:23:23,245 - INFO - --- main() - Le nombre de fichiers audio (35) correspond au nombre de pistes sur Discogs (35).
+2026-10-13 09:23:23,246 - INFO - --- main() - Website URL https://www.discogs.com/release/11547182-Les-Festes-Galantes-Jean-Christophe-Maillard-2-Ann-Monoyios-Les-Festes-Galantes-Œuvres-Pour-Musette
+2026-10-13 09:23:23,247 - INFO - --- main() - Mise en oeuvre des modifications tagID3...
+2026-10-13 09:23:23,838 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 01 - Gavotte d'Hindel, d'après Haendel.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,846 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 02 - Le retour de Thémire; Prélude Bergers ranimez vos musettes....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,852 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 03 - Le retour de Thémire; Récitatif Répétez mille fois....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,855 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 04 - Le retour de Thémire; Déjà sur les gazons naissants....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,858 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 05 - Le retour de Thémire; Thémire vient....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,861 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 06 - Le retour de Thémire; Goutez adorable bergère....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,866 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 07 - Le retour de Thémire.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,870 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 08 - Le retour de Thémire; Thémire applaudit....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,874 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 09 - Le retour de Thémire; Plaisirs que sa présence inspire....mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,879 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 10 - La galerie des chevreuils.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,883 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 11 - Les filles bleues.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,888 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 12 - Les singes verts.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,892 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 13 - Sonate en sol mineur; 1 Adagio.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,895 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 14 - Sonate en sol mineur; 2 Allegro.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,899 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 15 - Sonate en sol mineur; 3 Largo.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,903 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 16 - Sonate en sol mineur; 4 Giga allegro.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,907 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 17 - Divertissement de campagne; Prélude.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,911 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 18 - Divertissement de campagne; Passepied.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,914 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 19 - Divertissement de campagne; Rondeau.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,919 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 20 - Divertissement de campagne; Menuet.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,922 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 21 - Divertissement de campagne; Air tendre.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,926 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 22 - Divertissement de campagne; Tambourin.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,930 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 23 - Divertissement champêtre; 1 Lentement.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,934 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 24 - Divertissement champêtre; 2 Gaiement.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,939 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 25 - Divertissement champêtre; 3 Gracieusement.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,943 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 26 - Divertissement champêtre; 4 Légèrement.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,948 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 27 - Divertissement champêtre; 5 Tambourin.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,952 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 28 - Brunette et bransles de Bresse.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,957 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 29 - Musette.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,961 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 30 - Rondeau.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,965 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 31 - Pièces par accord; 1 Prélude.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,968 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 32 - Pièces par accord; 2 Fantaisie.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,972 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 33 - Pièces par accord; 3 Gavotte.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,976 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 34 - Pièces par accord; 4 Menuet.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,980 - ERROR - - apply_tags) - Erreur lors de l'application des tags pour 35 - Pièces par accord; 5 Musette.mp3: 'latin-1' codec can't encode character '\u0152' in position 121: ordinal not in range(256)
+2026-10-13 09:23:23,983 - INFO - --- main() - Toutes les modifications ont ete appliquees avec succes.
+2026-10-13 09:23:23,983 - INFO - --- main() - Telechargement de 7 images pour l'album.
+2026-10-13 09:23:24,472 - INFO - --- main() - .
+2026-10-13 09:23:25,000 - INFO - --- main() - .
+2026-10-13 09:23:25,497 - INFO - --- main() - .
+2026-10-13 09:23:25,937 - INFO - --- main() - .
+2026-10-13 09:23:26,356 - INFO - --- main() - .
+2026-10-13 09:23:26,817 - INFO - --- main() - .
+2026-10-13 09:23:27,329 - INFO - --- main() - .
+╒═══════════════════════════════════════════════════════════════════════════════════════════╤════════════╤═════════════════════════════════════════════════════════════════╤══════════════════════════════╤════════════════════════════════════════════╤═════════╕
+│ Chemin │ Position │ Titre │ Artiste │ Album │ Genre │
+╞═══════════════════════════════════════════════════════════════════════════════════════════╪════════════╪═════════════════════════════════════════════════════════════════╪══════════════════════════════╪════════════════════════════════════════════╪═════════╡
+│ /home/jm/Audio/MP3/01 - Gavotte d'Hindel, d'après Haendel.mp3 │ 1 │ Gavotte d'Hindel, d'après Haendel │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/02 - Le retour de Thémire; Prélude Bergers ranimez vos musettes....mp3 │ 2 │ Le retour de Thémire; Prélude "Bergers ranimez vos musettes..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/03 - Le retour de Thémire; Récitatif Répétez mille fois....mp3 │ 3 │ Le retour de Thémire; Récitatif "Répétez mille fois..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/04 - Le retour de Thémire; Déjà sur les gazons naissants....mp3 │ 4 │ Le retour de Thémire; "Déjà sur les gazons naissants..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/05 - Le retour de Thémire; Thémire vient....mp3 │ 5 │ Le retour de Thémire; "Thémire vient..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/06 - Le retour de Thémire; Goutez adorable bergère....mp3 │ 6 │ Le retour de Thémire; "Goutez adorable bergère..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/07 - Le retour de Thémire.mp3 │ 7 │ Le retour de Thémire │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/08 - Le retour de Thémire; Thémire applaudit....mp3 │ 8 │ Le retour de Thémire; "Thémire applaudit..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/09 - Le retour de Thémire; Plaisirs que sa présence inspire....mp3 │ 9 │ Le retour de Thémire; "Plaisirs que sa présence inspire..." │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/10 - La galerie des chevreuils.mp3 │ 10 │ La galerie des chevreuils │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/11 - Les filles bleues.mp3 │ 11 │ Les filles bleues │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/12 - Les singes verts.mp3 │ 12 │ Les singes verts │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/13 - Sonate en sol mineur; 1 Adagio.mp3 │ 13 │ Sonate en sol mineur; 1 Adagio │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/14 - Sonate en sol mineur; 2 Allegro.mp3 │ 14 │ Sonate en sol mineur; 2 Allegro │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/15 - Sonate en sol mineur; 3 Largo.mp3 │ 15 │ Sonate en sol mineur; 3 Largo │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/16 - Sonate en sol mineur; 4 Giga allegro.mp3 │ 16 │ Sonate en sol mineur; 4 Giga allegro │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/17 - Divertissement de campagne; Prélude.mp3 │ 17 │ Divertissement de campagne; Prélude │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/18 - Divertissement de campagne; Passepied.mp3 │ 18 │ Divertissement de campagne; Passepied │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/19 - Divertissement de campagne; Rondeau.mp3 │ 19 │ Divertissement de campagne; Rondeau │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/20 - Divertissement de campagne; Menuet.mp3 │ 20 │ Divertissement de campagne; Menuet │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/21 - Divertissement de campagne; Air tendre.mp3 │ 21 │ Divertissement de campagne; Air tendre │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/22 - Divertissement de campagne; Tambourin.mp3 │ 22 │ Divertissement de campagne; Tambourin │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/23 - Divertissement champêtre; 1 Lentement.mp3 │ 23 │ Divertissement champêtre; 1 Lentement │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/24 - Divertissement champêtre; 2 Gaiement.mp3 │ 24 │ Divertissement champêtre; 2 Gaiement │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/25 - Divertissement champêtre; 3 Gracieusement.mp3 │ 25 │ Divertissement champêtre; 3 Gracieusement │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/26 - Divertissement champêtre; 4 Légèrement.mp3 │ 26 │ Divertissement champêtre; 4 Légèrement │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/27 - Divertissement champêtre; 5 Tambourin.mp3 │ 27 │ Divertissement champêtre; 5 Tambourin │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/28 - Brunette et bransles de Bresse.mp3 │ 28 │ Brunette et bransles de Bresse │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/29 - Musette.mp3 │ 29 │ Musette │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/30 - Rondeau.mp3 │ 30 │ Rondeau │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/31 - Pièces par accord; 1 Prélude.mp3 │ 31 │ Pièces par accord; 1 Prélude │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/32 - Pièces par accord; 2 Fantaisie.mp3 │ 32 │ Pièces par accord; 2 Fantaisie │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/33 - Pièces par accord; 3 Gavotte.mp3 │ 33 │ Pièces par accord; 3 Gavotte │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/34 - Pièces par accord; 4 Menuet.mp3 │ 34 │ Pièces par accord; 4 Menuet │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────────────────────────────────────────────────────┼──────────────────────────────┼────────────────────────────────────────────┼─────────┤
+│ /home/jm/Audio/MP3/35 - Pièces par accord; 5 Musette.mp3 │ 35 │ Pièces par accord; 5 Musette │ Ensemble Les Festes Galantes │ Les Festes Galantes - Oeuvres pour Musette │ Baroque │
+╘═══════════════════════════════════════════════════════════════════════════════════════════╧════════════╧═════════════════════════════════════════════════════════════════╧══════════════════════════════╧════════════════════════════════════════════╧═════════╛2026-10-13 09:23:27,499 - INFO - --- main() ---- Sauvegarde finale dans /home/jm/Audio/Ensemble Les Festes Galantes -- Les Festes Galantes (Œuvres Pour Musette)
+2026-10-13 09:23:27,499 - INFO - --- main() ---- Analyse de la qualitÃ© audio dans /home/jm/Audio/MP3/
+2026-10-13 09:23:27,499 - INFO - - analyze_mp3_files() - Analyse des fichiers MP3 dans le dossier : /home/jm/Audio/Ensemble Les Festes Galantes -- Les Festes Galantes (Œuvres Pour Musette)
+
+2026-10-13 09:23:27,500 - INFO - - analyze_mp3_files() - Fichier : 01 - Gavotte d'Hindel, d'après Haendel.mp3 ---
+2026-10-13 09:23:27,500 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,500 - INFO - - analyze_mp3_files() - Fichier : 02 - Le retour de Thémire; Prélude Bergers ranimez vos musettes....mp3 ---
+2026-10-13 09:23:27,501 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,501 - INFO - - analyze_mp3_files() - Fichier : 03 - Le retour de Thémire; Récitatif Répétez mille fois....mp3 ---
+2026-10-13 09:23:27,501 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,502 - INFO - - analyze_mp3_files() - Fichier : 04 - Le retour de Thémire; Déjà sur les gazons naissants....mp3 ---
+2026-10-13 09:23:27,502 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,503 - INFO - - analyze_mp3_files() - Fichier : 05 - Le retour de Thémire; Thémire vient....mp3 ---
+2026-10-13 09:23:27,503 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,504 - INFO - - analyze_mp3_files() - Fichier : 06 - Le retour de Thémire; Goutez adorable bergère....mp3 ---
+2026-10-13 09:23:27,504 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,505 - INFO - - analyze_mp3_files() - Fichier : 07 - Le retour de Thémire.mp3 ---
+2026-10-13 09:23:27,505 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,505 - INFO - - analyze_mp3_files() - Fichier : 08 - Le retour de Thémire; Thémire applaudit....mp3 ---
+2026-10-13 09:23:27,505 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,506 - INFO - - analyze_mp3_files() - Fichier : 09 - Le retour de Thémire; Plaisirs que sa présence inspire....mp3 ---
+2026-10-13 09:23:27,506 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,507 - INFO - - analyze_mp3_files() - Fichier : 10 - La galerie des chevreuils.mp3 ---
+2026-10-13 09:23:27,507 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,508 - INFO - - analyze_mp3_files() - Fichier : 11 - Les filles bleues.mp3 ---
+2026-10-13 09:23:27,508 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,508 - INFO - - analyze_mp3_files() - Fichier : 12 - Les singes verts.mp3 ---
+2026-10-13 09:23:27,508 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,509 - INFO - - analyze_mp3_files() - Fichier : 13 - Sonate en sol mineur; 1 Adagio.mp3 ---
+2026-10-13 09:23:27,509 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,510 - INFO - - analyze_mp3_files() - Fichier : 14 - Sonate en sol mineur; 2 Allegro.mp3 ---
+2026-10-13 09:23:27,510 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,511 - INFO - - analyze_mp3_files() - Fichier : 15 - Sonate en sol mineur; 3 Largo.mp3 ---
+2026-10-13 09:23:27,511 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,511 - INFO - - analyze_mp3_files() - Fichier : 16 - Sonate en sol mineur; 4 Giga allegro.mp3 ---
+2026-10-13 09:23:27,511 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,512 - INFO - - analyze_mp3_files() - Fichier : 17 - Divertissement de campagne; Prélude.mp3 ---
+2026-10-13 09:23:27,512 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,513 - INFO - - analyze_mp3_files() - Fichier : 18 - Divertissement de campagne; Passepied.mp3 ---
+2026-10-13 09:23:27,513 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,514 - INFO - - analyze_mp3_files() - Fichier : 19 - Divertissement de campagne; Rondeau.mp3 ---
+2026-10-13 09:23:27,514 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,514 - INFO - - analyze_mp3_files() - Fichier : 20 - Divertissement de campagne; Menuet.mp3 ---
+2026-10-13 09:23:27,514 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,515 - INFO - - analyze_mp3_files() - Fichier : 21 - Divertissement de campagne; Air tendre.mp3 ---
+2026-10-13 09:23:27,515 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,516 - INFO - - analyze_mp3_files() - Fichier : 22 - Divertissement de campagne; Tambourin.mp3 ---
+2026-10-13 09:23:27,516 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,517 - INFO - - analyze_mp3_files() - Fichier : 23 - Divertissement champêtre; 1 Lentement.mp3 ---
+2026-10-13 09:23:27,517 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,517 - INFO - - analyze_mp3_files() - Fichier : 24 - Divertissement champêtre; 2 Gaiement.mp3 ---
+2026-10-13 09:23:27,517 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,518 - INFO - - analyze_mp3_files() - Fichier : 25 - Divertissement champêtre; 3 Gracieusement.mp3 ---
+2026-10-13 09:23:27,518 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,519 - INFO - - analyze_mp3_files() - Fichier : 26 - Divertissement champêtre; 4 Légèrement.mp3 ---
+2026-10-13 09:23:27,519 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,520 - INFO - - analyze_mp3_files() - Fichier : 27 - Divertissement champêtre; 5 Tambourin.mp3 ---
+2026-10-13 09:23:27,520 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,521 - INFO - - analyze_mp3_files() - Fichier : 28 - Brunette et bransles de Bresse.mp3 ---
+2026-10-13 09:23:27,521 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,521 - INFO - - analyze_mp3_files() - Fichier : 29 - Musette.mp3 ---
+2026-10-13 09:23:27,521 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,522 - INFO - - analyze_mp3_files() - Fichier : 30 - Rondeau.mp3 ---
+2026-10-13 09:23:27,522 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,523 - INFO - - analyze_mp3_files() - Fichier : 31 - Pièces par accord; 1 Prélude.mp3 ---
+2026-10-13 09:23:27,523 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,523 - INFO - - analyze_mp3_files() - Fichier : 32 - Pièces par accord; 2 Fantaisie.mp3 ---
+2026-10-13 09:23:27,524 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,524 - INFO - - analyze_mp3_files() - Fichier : 33 - Pièces par accord; 3 Gavotte.mp3 ---
+2026-10-13 09:23:27,524 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,525 - INFO - - analyze_mp3_files() - Fichier : 34 - Pièces par accord; 4 Menuet.mp3 ---
+2026-10-13 09:23:27,525 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,526 - INFO - - analyze_mp3_files() - Fichier : 35 - Pièces par accord; 5 Musette.mp3 ---
+2026-10-13 09:23:27,526 - INFO - - analyze_mp3_files() - Debit: 320 kbps - Frequence : 44100 Hz - Qualite : Excellente (equivalent 320 kbps)
+2026-10-13 09:23:27,526 - INFO - --- main() ---- Fin du programme -----------------------------------------
+
+✓ Terminé avec succès.

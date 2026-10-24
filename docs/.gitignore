@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pip_installed
+.python-version
+.env
+venv*/
+.vscode/
