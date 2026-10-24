@@ -1,8 +1,12 @@
 # Tagger GUI – Discogs Audio Tagger
 
+[![Logo](img/icone2.png)](img/icone2.png)
+
 Tagger GUI is a small desktop application that **automatically tags your MP3 albums** using the [Discogs](https://www.discogs.com) music database.
 
 You give it the **barcode** printed on the back of a CD and the **folder** that contains the ripped MP3 files. It finds the album on Discogs, then writes the correct artist, album, track titles, genre, year, composer and cover art into every file. It also shows you the resulting tags and the audio quality of each track in a table.
+
+[![tagger_GUI](img/tagger_GUI.png)](img/tagger_GUI.png)
 
 The project has two parts:
 
