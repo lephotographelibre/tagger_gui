@@ -22,8 +22,10 @@ VENV_PIP="${HOME}/.pyenv/versions/${PYTHON_VERSION}/envs/${VENV_NAME}/bin/pip"
 
 # ── 1. Charge pyenv ──────────────────────────────────────────────────────
 if [ -f "${HOME}/.bash_profile" ]; then
+    set +u
     # shellcheck source=/dev/null
     source "${HOME}/.bash_profile"
+    set -u
 fi
 
 # ── 2. Vérifie que le venv existe ─────────────────────────────────────────
