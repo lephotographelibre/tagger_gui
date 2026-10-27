@@ -354,7 +354,8 @@ class MainWindow(QMainWindow):
         # TOKEN_DISCOGS (optionnelle), 3) boîte de dialogue de saisie
         token = self.inp_token.text().strip()
         if not token:
-            token = os.environ.get("TOKEN_DISCOGS", "").strip()
+            # token = os.environ.get("TOKEN_DISCOGS", "").strip()
+            token = ( os.environ.get("DISCOGS_TOKEN", "") or os.environ.get("TOKEN_DISCOGS", "")).strip()
         if not token:
             token, ok = QInputDialog.getText(
                 self,
