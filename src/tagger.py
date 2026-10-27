@@ -65,6 +65,8 @@ options:
     V2.3.2  Fix bug #24 pb de caractères non latin1 dans une string mutagen back to V2.2.1 remove unidecode EasyMP3 --> EasyID3
     V2.3.4  Fix #27 Alert if substracks AND Headings found
     V2.4  Fix Bug #27 - Using both headings and subtracks
+    V2.4.1  Fix latin-1 encoding error: force ID3v2.4 (UTF-8) in apply_tags()
+    V2.4.2  Fix latin-1 for URL frames (website/WOAR always latin-1) + sanitize Œ/œ
 
 """
 
@@ -102,7 +104,7 @@ import stat
 # from unidecode import unidecode
 
 # --- Variable Globales -----------------------------------------------------------------------
-VERSION = "V2.4"
+VERSION = "V2.4.2"
 DISCOGS_API_URL = "https://api.discogs.com"
 # Le token Discogs n'est plus code en dur : il est fourni par la variable d'environnement
 # DISCOGS_TOKEN (cas du lancement depuis tagger_gui.py) ou TOKEN_DISCOGS (optionnelle) ou saisi via une boite de dialogue
@@ -493,29 +495,87 @@ def prepare_new_tags(
     return new_tags
 
 
-# En utilsant mutagen appliquer les nouveaux tags aux fichiers audio
-def apply_tags(filepath, new_tags):
-    """Applique les nouveaux tags e un fichier audio
-    Attention avec mutagen - non support de UTF-8 par défaut or les Chaîne de caractères provenants de discogs Peuvent contenier des caractères non-latin1   ex: barcode  # Chaîne de caractères avec des caractères non-latin1 ex: barcode 5051083179805.
+# ---------------------------------------------------------------------------
+# V2.4.2  Fix latin-1 encoding error (robust)
+# ---------------------------------------------------------------------------
+# Les frames URL ID3 (WOAR / "website") sont TOUJOURS en latin-1 d'après la
+# spécification ID3 — même en v2.4. L'URL Discogs contient souvent Œ, œ, etc.
+# → on sanitise ces caractères avant d'écrire le tag.
+# Les frames texte (title, album, artist…) passent en UTF-8 via ID3v2.4.
+# ---------------------------------------------------------------------------
+
+def _sanitize_id3_text(text: str, for_url: bool = False) -> str:
+    """Remplace les caractères hors latin-1 (et quelques typographiques).
+
+    Args:
+        text: chaîne à nettoyer
+        for_url: True pour les frames URL (WOAR) qui DOIVENT rester latin-1
     """
+    if not isinstance(text, str):
+        text = str(text) if text is not None else ""
 
-    # V2.3    Fix bug #24 pb de caractères non latin1 dans une string mutagen
+    replacements = {
+        "\u0152": "OE",   # Œ
+        "\u0153": "oe",   # œ
+        "\u2013": "-",    # –
+        "\u2014": "-",    # —
+        "\u2018": "'",    # ‘
+        "\u2019": "'",    # ’
+        "\u201c": '"',    # “
+        "\u201d": '"',    # ”
+        "\u00a0": " ",    # non-breaking space
+        "\u2026": "...",  # …
+    }
+    for src, dst in replacements.items():
+        text = text.replace(src, dst)
+
+    if for_url:
+        # Les frames URL ID3 n'acceptent que latin-1 : on force le remplacement
+        return text.encode("latin-1", errors="replace").decode("latin-1")
+    return text
+
+
+# En utilsant mutagen appliquer les nouveaux tags aux fichiers audio
+# V2.4.2  Fix latin-1 : sanitise + ID3v2.4 (UTF-8) pour les frames texte
+def apply_tags(filepath, new_tags):
+    """Applique les nouveaux tags à un fichier audio.
+
+    - Frames texte  → ID3v2.4 (UTF-8)
+    - Frames URL    → latin-1 (obligation de la norme ID3) après sanitisation
+    """
+    # Clés EasyID3 qui correspondent à des frames URL (toujours latin-1)
+    URL_KEYS = {"website", "url"}
+
     try:
-        #  V2.3.2  Fix bug #24 pb de caractères non latin1 dans une string mutagen back to V2.2.1 remove unidecode EasyMP3 --> EasyID3
-        # audio = EasyMP3(filepath)
-        audio = EasyID3(filepath)
-        for key, value in new_tags.items():
+        # Supprimer les anciens tags pour repartir proprement en v2.4
+        try:
+            existing = ID3(filepath)
+            existing.delete()
+        except Exception:
+            pass
 
-            logging.debug(f"- apply_tags) - key/Value = {key} / {value} ")
-            # V2.3 unidécode prend une chaîne avec divers caractères (accents, symboles monétaires, etc.) et la convertit en une chaîne purement ASCII, qui est donc compatible latin-1.
-            audio[key] = value
-        audio.save()
+        try:
+            audio = EasyID3(filepath)
+        except Exception:
+            audio = EasyID3()
+
+        for key, value in new_tags.items():
+            if value is None:
+                continue
+            is_url = key in URL_KEYS
+            clean = _sanitize_id3_text(str(value), for_url=is_url)
+            logging.debug(f"- apply_tags) - key/Value = {key} / {clean} ")
+            audio[key] = clean
+
+        # ID3v2.4 → UTF-8 pour title, album, artist, etc.
+        audio.save(filepath, v2_version=4)
         logging.info(
             f"- apply_tags) - Tags mis a jour pour : {os.path.basename(filepath)}"
         )
     except Exception as e:
         logging.error(
-            f"- apply_tags) - Erreur lors de l'application des tags pour {os.path.basename(filepath)}: {e}"
+            f"- apply_tags) - Erreur lors de l'application des tags pour "
+            f"{os.path.basename(filepath)}: {e}"
         )
 
 
