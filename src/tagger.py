@@ -72,6 +72,7 @@ options:
     V2.4.2  Fix latin-1 for URL frames (website/WOAR always latin-1) + sanitize Œ/œ
     V2.5.0  Add -a, --album : forcer le titre de l'album (tag album + nom du repertoire final)
     V2.5.1  Fixed Issue #5 Missing track number 
+    V2.5.2  Fixed Issue #7 Error Could not parse stylesheet of object _ClickableLabel(0x562b2986ac80)
 """
 
 import shutil
@@ -108,7 +109,7 @@ import stat
 # from unidecode import unidecode
 
 # --- Variable Globales -----------------------------------------------------------------------
-VERSION = "V2.5.1"
+VERSION = "V2.5.2"
 DISCOGS_API_URL = "https://api.discogs.com"
 # Le token Discogs n'est plus code en dur : il est fourni par la variable d'environnement
 # DISCOGS_TOKEN (cas du lancement depuis tagger_gui.py) ou TOKEN_DISCOGS (optionnelle) ou saisi via une boite de dialogue

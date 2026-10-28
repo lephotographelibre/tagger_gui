@@ -501,8 +501,9 @@ class MainWindow(QMainWindow):
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             lbl.setToolTip(f"{name}\n(cliquez pour ouvrir)")
             lbl.setStyleSheet(
-                "border:1px solid #ccc; border-radius:4px; padding:2px; background:#fff;"
-                "\n_ClickableLabel:hover { border-color:#2196F3; }"
+                "_ClickableLabel { border:1px solid #ccc; border-radius:4px;"
+                " padding:2px; background:#fff; }"
+                " _ClickableLabel:hover { border-color:#2196F3; }"
             )
             lbl.clicked.connect(self._open_image_viewer)
             self._images_grid.addWidget(lbl, idx // COLS, idx % COLS)
