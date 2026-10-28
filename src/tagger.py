@@ -27,6 +27,9 @@ options:
                         Discogs Release ID pour forcer une valeur si il est present
   -i, --interprete INTERPRETE
                         Interprete de l'album pour forcer une valeur si il est present
+  -a, --album ALBUM_TITLE
+                        Titre de l'album pour forcer une valeur si il est present
+                        (tag album + nom du repertoire final "Interprete -- Titre album")
 
     Exemples:
 
@@ -67,6 +70,8 @@ options:
     V2.4  Fix Bug #27 - Using both headings and subtracks
     V2.4.1  Fix latin-1 encoding error: force ID3v2.4 (UTF-8) in apply_tags()
     V2.4.2  Fix latin-1 for URL frames (website/WOAR always latin-1) + sanitize Œ/œ
+    V2.5.0  Add -a, --album : forcer le titre de l'album (tag album + nom du repertoire final)
+    V2.5.1  Fix apply_tags() : conserver tracknumber / discnumber lors de la reecriture des tags
 
 """
 
@@ -104,7 +109,7 @@ import stat
 # from unidecode import unidecode
 
 # --- Variable Globales -----------------------------------------------------------------------
-VERSION = "V2.4.2"
+VERSION = "V2.5.1"
 DISCOGS_API_URL = "https://api.discogs.com"
 # Le token Discogs n'est plus code en dur : il est fourni par la variable d'environnement
 # DISCOGS_TOKEN (cas du lancement depuis tagger_gui.py) ou TOKEN_DISCOGS (optionnelle) ou saisi via une boite de dialogue
@@ -126,6 +131,8 @@ GENRE = ""
 # COMPOSITEUR = False
 RELEASE_ID = ""
 INTERPRETE = ""
+# V2.5.0  Titre d'album force ("default" = utiliser le titre Discogs)
+ALBUM_FORCE = "default"
 
 
 def ask_discogs_token() -> str:
@@ -238,6 +245,16 @@ def cmdline_args():
         dest="INTERPRETE",
         type=str,
         help="Interprete de l'album pour forcer une valeur si il est present",
+        default="default",
+    )
+    # V2.5.0  Forcer le titre de l'album (tag album + nom du repertoire)
+    parser.add_argument(
+        "-a",
+        "--album",
+        dest="ALBUM_FORCE",
+        type=str,
+        help="Titre de l'album pour forcer une valeur si il est present "
+        "(utilise pour le tag album et pour le nom du repertoire final)",
         default="default",
     )
 
@@ -546,7 +563,21 @@ def apply_tags(filepath, new_tags):
     # Clés EasyID3 qui correspondent à des frames URL (toujours latin-1)
     URL_KEYS = {"website", "url"}
 
+    # Tags a conserver (non fournis par Discogs) : numero de piste et de disque
+    PRESERVED_KEYS = ("tracknumber", "discnumber")
+
     try:
+        # V2.5.1  Sauvegarder tracknumber / discnumber avant la suppression des anciens tags
+        preserved = {}
+        try:
+            old_audio = EasyID3(filepath)
+            for key in PRESERVED_KEYS:
+                vals = old_audio.get(key)
+                if vals and key not in new_tags:
+                    preserved[key] = vals[0]
+        except Exception:
+            pass
+
         # Supprimer les anciens tags pour repartir proprement en v2.4
         try:
             existing = ID3(filepath)
@@ -566,6 +597,11 @@ def apply_tags(filepath, new_tags):
             clean = _sanitize_id3_text(str(value), for_url=is_url)
             logging.debug(f"- apply_tags) - key/Value = {key} / {clean} ")
             audio[key] = clean
+
+        # V2.5.1  Restaurer tracknumber / discnumber
+        for key, value in preserved.items():
+            logging.debug(f"- apply_tags) - restauration {key} = {value}")
+            audio[key] = value
 
         # ID3v2.4 → UTF-8 pour title, album, artist, etc.
         audio.save(filepath, v2_version=4)
@@ -1446,6 +1482,11 @@ def main():
     if INTERPRETE != "default":
         ARTIST = INTERPRETE
 
+    # V2.5.0  Forcer le titre de l'album (sinon titre Discogs)
+    if ALBUM_FORCE != "default" and ALBUM_FORCE.strip():
+        ALBUM_TITLE = ALBUM_FORCE.strip()
+        logging.info(f"--- main() - Titre d'album force : {ALBUM_TITLE}")
+
     # V2.0.1  Fix bug heading found with release id 3157223 Agnes Obel
     audio_file_sort_by_trackname = tri_list_fichiers(AUDIO_FOLDER)
     # logging.debug(f"--- main() - Modification en cours .... {audio_file_sort_by_trackname}")
@@ -1513,7 +1554,11 @@ def main():
     if INTERPRETE != "default":
         ARTIST = INTERPRETE
 
-    ALBUM_TITLE = release_data.get("title").replace("/", "-")
+    # V2.5.0  Titre d'album force prioritaire sur le titre Discogs
+    if ALBUM_FORCE != "default" and ALBUM_FORCE.strip():
+        ALBUM_TITLE = ALBUM_FORCE.strip().replace("/", "-")
+    else:
+        ALBUM_TITLE = release_data.get("title").replace("/", "-")
 
     AUDIO_FOLDER_SAVE = os.path.join(
         Path(AUDIO_FOLDER).parent, f"{ARTIST} -- {ALBUM_TITLE}"
@@ -1566,9 +1611,11 @@ if __name__ == "__main__":
     # V2.2.1  Code support paramètre -r sous la forme [r14414132]
     RELEASE_ID = clean_release_id(args.RELEASE_ID)
     INTERPRETE = args.INTERPRETE
+    # V2.5.0  Titre d'album force
+    ALBUM_FORCE = args.ALBUM_FORCE
 
     logging.info(
-        f"------ Variables Globales : {BARCODE}  +  {AUDIO_FOLDER} + args.compositeur= {args.compositeur} + GENRE = {GENRE} + RELEASE_ID = {RELEASE_ID} + INTERPRETE = {INTERPRETE} ----------"
+        f"------ Variables Globales : {BARCODE}  +  {AUDIO_FOLDER} + args.compositeur= {args.compositeur} + GENRE = {GENRE} + RELEASE_ID = {RELEASE_ID} + INTERPRETE = {INTERPRETE} + ALBUM_FORCE = {ALBUM_FORCE} ----------"
     )
 
     # - Token Discogs : variable d'environnement ou boite de dialogue de saisie

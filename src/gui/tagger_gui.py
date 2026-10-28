@@ -14,6 +14,7 @@ Exécution :
 
 import sys
 import os
+import re
 import subprocess
 
 from PyQt6.QtWidgets import (
@@ -127,7 +128,6 @@ class _ClickableLabel(QLabel):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Tagger GUI – Discogs Audio Tagger")
         self.setMinimumSize(1400, 820)
         self._worker: _TaggerWorker | None = None
 
@@ -135,6 +135,11 @@ class MainWindow(QMainWindow):
         self._script_path = os.path.normpath(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tagger.py")
         )
+
+        # Titre de la fenêtre avec le numéro de version lu dans tagger.py
+        version = _read_tagger_version(self._script_path)
+        title = "Tagger GUI – Discogs Audio Tagger"
+        self.setWindowTitle(f"{title} – tagger {version}" if version else title)
         self._build_ui()
 
     # ------------------------------------------------------------------
@@ -218,6 +223,11 @@ class MainWindow(QMainWindow):
         self.inp_interprete = QLineEdit()
         self.inp_interprete.setPlaceholderText("(optionnel)")
         form.addRow("Interprète :", self.inp_interprete)
+
+        # Titre de l'album (optionnel : sinon titre Discogs)
+        self.inp_album = QLineEdit()
+        self.inp_album.setPlaceholderText("(optionnel – sinon titre Discogs)")
+        form.addRow("Titre album :", self.inp_album)
 
         # Discogs Token
         self.inp_token = QLineEdit()
@@ -342,6 +352,8 @@ class MainWindow(QMainWindow):
             args.extend(["-r", r])
         if i := self.inp_interprete.text().strip():
             args.extend(["-i", i])
+        if a := self.inp_album.text().strip():
+            args.extend(["-a", a])
         return args
 
     # ── Exécution ─────────────────────────────────────────────────────
@@ -573,6 +585,19 @@ def _collect_tracks(folder: str) -> list[dict]:
 
     tracks.sort(key=lambda t: t["_sort"])
     return tracks
+
+
+def _read_tagger_version(script_path: str) -> str:
+    """Lit la variable VERSION de tagger.py sans l'importer (retourne "" si introuvable)."""
+    try:
+        with open(script_path, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                m = re.match(r"""\s*VERSION\s*=\s*['"]([^'"]+)['"]""", line)
+                if m:
+                    return m.group(1)
+    except OSError:
+        pass
+    return ""
 
 
 def _analyze_quality(filepath: str) -> tuple[str, str, str]:
