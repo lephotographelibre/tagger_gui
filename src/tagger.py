@@ -71,8 +71,7 @@ options:
     V2.4.1  Fix latin-1 encoding error: force ID3v2.4 (UTF-8) in apply_tags()
     V2.4.2  Fix latin-1 for URL frames (website/WOAR always latin-1) + sanitize Œ/œ
     V2.5.0  Add -a, --album : forcer le titre de l'album (tag album + nom du repertoire final)
-    V2.5.1  Fix apply_tags() : conserver tracknumber / discnumber lors de la reecriture des tags
-
+    V2.5.1  Fixed Issue #5 Missing track number 
 """
 
 import shutil
@@ -563,21 +562,7 @@ def apply_tags(filepath, new_tags):
     # Clés EasyID3 qui correspondent à des frames URL (toujours latin-1)
     URL_KEYS = {"website", "url"}
 
-    # Tags a conserver (non fournis par Discogs) : numero de piste et de disque
-    PRESERVED_KEYS = ("tracknumber", "discnumber")
-
     try:
-        # V2.5.1  Sauvegarder tracknumber / discnumber avant la suppression des anciens tags
-        preserved = {}
-        try:
-            old_audio = EasyID3(filepath)
-            for key in PRESERVED_KEYS:
-                vals = old_audio.get(key)
-                if vals and key not in new_tags:
-                    preserved[key] = vals[0]
-        except Exception:
-            pass
-
         # Supprimer les anciens tags pour repartir proprement en v2.4
         try:
             existing = ID3(filepath)
@@ -597,11 +582,6 @@ def apply_tags(filepath, new_tags):
             clean = _sanitize_id3_text(str(value), for_url=is_url)
             logging.debug(f"- apply_tags) - key/Value = {key} / {clean} ")
             audio[key] = clean
-
-        # V2.5.1  Restaurer tracknumber / discnumber
-        for key, value in preserved.items():
-            logging.debug(f"- apply_tags) - restauration {key} = {value}")
-            audio[key] = value
 
         # ID3v2.4 → UTF-8 pour title, album, artist, etc.
         audio.save(filepath, v2_version=4)
