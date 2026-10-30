@@ -39,6 +39,7 @@ The project has two parts:
 
 - Finds an album on Discogs from its **barcode**, or from a **Release ID** you force manually.
 - Writes ID3 tags: artist, album artist, album, title, genre, year, composer, barcode and Discogs web page.
+- Lets you **force the album title** (tag and final folder name) instead of using the Discogs one.
 - Embeds the **front cover** in every MP3 and downloads **all album images** into the folder.
 - Handles **multi-disc albums**, **classical releases** with headings and sub-tracks, and optional **composer names in track titles**.
 - Fills in missing track numbers and titles from the file names before tagging.
@@ -76,11 +77,11 @@ In order, the script does the following:
 5. Adds a track number and a title (taken from the file name) to any file that has no track number.
 6. Searches Discogs for the barcode. If several releases match, it uses the main release of the matching *master* release, or otherwise the first valid release. You can override this with `-r`.
 7. Downloads the release details and compares the number of tracks on Discogs with the number of files, and warns you if they differ.
-8. Builds the track titles. Headings and sub-tracks (common on classical albums) are added as a prefix. With `-c`, the composer is added in brackets.
+8. Builds the track titles. Headings and sub-tracks (common on classical albums) are added as a prefix. With `-c`, the composer is added in brackets. With `-a`, the album title you typed replaces the Discogs one.
 9. Writes the tags and the cover into each file. Files are matched to Discogs tracks in **track-number order** (and disc number order for multi-disc albums).
 10. Downloads every album image into the folder as `album_image_1.jpg`, `album_image_2.jpg`, and so on.
 11. Prints a table of the final tags.
-12. **Copies the tagged folder to `Artist -- Album`** (in the parent directory of your audio folder).
+12. **Copies the tagged folder to `Artist -- Album`** (in the parent directory of your audio folder). If you forced the album title with `-a`, your title is used in the folder name.
 13. Reports the bitrate, sample rate and quality of every track.
 
 ---
@@ -212,7 +213,7 @@ python src/gui/tagger_gui.py
 **Using the window:**
 
 1. Enter the **barcode** (required) and choose the **audio folder**.
-2. Optionally set the genre, release ID, performer, or tick *Add the composer to the title*.
+2. Optionally set the genre, release ID, performer, **album title**, or tick *Add the composer to the title*. If the *Titre album* field is left empty, the album title from Discogs is used.
 3. Click **▶ Exécuter Tagger**.
 4. Follow the colour-coded log at the bottom. Errors are red, warnings orange.
 5. When it finishes, the **track table** on the right and the **album images** on the left refresh automatically. Click an image thumbnail to open it full size.
@@ -236,6 +237,9 @@ python src/tagger.py "3 149020 949252" -f "/home/me/Audio/MP3" --compositeur
 # Force genre, release and performer
 python src/tagger.py "3 149020 949252" -f "/home/me/Audio/MP3" \
     --genre "Chanson Française" --release 30305858 --interprete "Michel Jonasz"
+
+# Force the album title (used for the album tag and for the final folder name)
+python src/tagger.py 081227819781 -f "/home/me/Audio/MP3" --album "My Album Title"
 ```
 
 Use `python src/tagger.py --help` for the built-in help.
@@ -255,6 +259,7 @@ Use `python src/tagger.py --help` for the built-in help.
 | Genre | `-g`, `--genre` | Forces the genre for the whole album. |
 | Release ID | `-r`, `--release` | Forces a specific Discogs release. Accepts `30305858` or `[r30305858]`. |
 | Interprète | `-i`, `--interprete` | Forces the artist name. |
+| Titre album | `-a`, `--album` | Forces the album title. Optional: if omitted or empty, the Discogs title is used. The value is written in the `album` tag of every track and is also used in the final folder name `Artist -- Album Title`. |
 | Discogs Token | *(environment)* | See [Getting a Discogs token](#getting-a-discogs-token). |
 
 ---
@@ -266,7 +271,7 @@ Use `python src/tagger.py --help` for the built-in help.
 | Tag | Source |
 |-----|--------|
 | `artist`, `albumartist` | First Discogs artist, or the value of `--interprete` |
-| `album` | Release `title` |
+| `album` | The `--album` value if given. Otherwise the release `title` from Discogs |
 | `title` | Track title, prefixed by heading/sub-track name when present, plus the composer with `-c` |
 | `genre` | The `--genre` value if given. Otherwise the first Discogs genre, shown as `Classique` for *Classical* releases and `Baroque` when the style is *Baroque* |
 | `date` | Release `year` |
@@ -281,7 +286,7 @@ Use `python src/tagger.py --help` for the built-in help.
 |------|------|---------|
 | `MP3_SAVE/` | Before any change | Backup of the original files |
 | `album_image_N.jpg` | After tagging | All images of the release, saved inside the audio folder |
-| `Artist -- Album/` | At the end | Copy of the tagged album with a clean name (`/` in names is replaced by `-`) |
+| `Artist -- Album/` | At the end | Copy of the tagged album with a clean name (`/` in names is replaced by `-`). The album part is the `--album` value if given, otherwise the Discogs title |
 
 ---
 
@@ -453,6 +458,7 @@ The GUI starts `tagger.py` as a separate process and passes the token through an
 | "Pas de release trouvé avec ce barcode" | The barcode is not on Discogs, or is written differently. Find the release on the Discogs website and pass its ID with `-r`. |
 | The number of files does not match the number of Discogs tracks | The release found is not the right edition. Try another release ID with `-r`. |
 | Wrong genre | Use `-g` to force the value. |
+| Wrong album title (or you prefer your own) | Use `-a "Album Title"` (GUI: *Titre album* field) to force the value. It is used for the `album` tag and for the final folder name. |
 | The window does not open on Linux (`xcb` error) | Install the system library: `sudo apt install libxcb-cursor0`. |
 | `run_tagger_gui.sh` says the virtualenv is not found | Create it with `pyenv virtualenv 3.11.13 venv_tagger`, or adapt `VENV_NAME` and `PYTHON_VERSION` at the top of the script. |
 | No token dialog appears when running `tagger.py` alone | Tkinter is not installed. The token is then requested in the terminal. |
