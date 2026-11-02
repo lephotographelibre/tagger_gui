@@ -40,6 +40,8 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QGridLayout,
     QScrollArea,
+    QProxyStyle,
+    QStyle,
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QSize, QEvent
 from PyQt6.QtGui import QColor, QIcon, QPixmap, QFont
@@ -67,6 +69,27 @@ def _evaluate_quality(bitrate_kbps: float) -> tuple[str, str, str]:
         if bitrate_kbps >= threshold:
             return label, bg, fg
     return "Faible", "#D32F2F", "#ffffff"
+
+
+# ---------------------------------------------------------------------------
+# Token Discogs depuis l'environnement
+# ---------------------------------------------------------------------------
+def _token_from_env() -> str:
+    """Retourne le token Discogs des variables d'environnement ("" si absent)."""
+    return (
+        os.environ.get("DISCOGS_TOKEN", "") or os.environ.get("TOKEN_DISCOGS", "")
+    ).strip()
+
+
+# ---------------------------------------------------------------------------
+# Style : force le caractère '*' pour les champs QLineEdit en mode Password
+# (par défaut, Qt affiche un point « ● » selon le style).
+# ---------------------------------------------------------------------------
+class _AsteriskStyle(QProxyStyle):
+    def styleHint(self, hint, option=None, widget=None, returnData=None):
+        if hint == QStyle.StyleHint.SH_LineEdit_PasswordCharacter:
+            return ord("*")
+        return super().styleHint(hint, option, widget, returnData)
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +194,13 @@ class MainWindow(QMainWindow):
         log_vbox.addWidget(self.log_edit)
         root.addWidget(log_group)
 
+        # Information si le token a été lu depuis l'environnement
+        if self._token_from_env_loaded:
+            self._append_log(
+                "<b style='color:#4CAF50'>✓ Token Discogs lu depuis "
+                "la variable d'environnement.</b>"
+            )
+
     # ── Panneau gauche ────────────────────────────────────────────────
     def _build_left_panel(self) -> QWidget:
         panel = QWidget()
@@ -230,9 +260,22 @@ class MainWindow(QMainWindow):
         form.addRow("Titre album :", self.inp_album)
 
         # Discogs Token
+        # Si le token est présent dans l'environnement (DISCOGS_TOKEN ou
+        # TOKEN_DISCOGS), le champ est pré-rempli : en mode Password, il
+        # s'affiche sous forme d'astérisques pour indiquer que le token a
+        # bien été lu.
         self.inp_token = QLineEdit()
-        self.inp_token.setPlaceholderText("(demandé au lancement si vide)")
         self.inp_token.setEchoMode(QLineEdit.EchoMode.Password)
+        env_token = _token_from_env()
+        self._token_from_env_loaded = bool(env_token)
+        if env_token:
+            self.inp_token.setText(env_token)
+            self.inp_token.setToolTip(
+                "Token lu depuis la variable d'environnement "
+                "(DISCOGS_TOKEN / TOKEN_DISCOGS)"
+            )
+        else:
+            self.inp_token.setPlaceholderText("(demandé au lancement si vide)")
         form.addRow("Discogs Token :", self.inp_token)
 
         grp.setLayout(form)
@@ -362,12 +405,15 @@ class MainWindow(QMainWindow):
         if args is None:
             return
 
-        # Token Discogs : 1) champ du formulaire, 2) variable d'environnement
-        # TOKEN_DISCOGS (optionnelle), 3) boîte de dialogue de saisie
+        # Token Discogs : 1) champ du formulaire (pré-rempli si l'environnement
+        # contient DISCOGS_TOKEN / TOKEN_DISCOGS), 2) variable d'environnement
+        # (au cas où elle aurait été définie après le lancement du GUI),
+        # 3) boîte de dialogue de saisie
         token = self.inp_token.text().strip()
         if not token:
-            # token = os.environ.get("TOKEN_DISCOGS", "").strip()
-            token = ( os.environ.get("DISCOGS_TOKEN", "") or os.environ.get("TOKEN_DISCOGS", "")).strip()
+            token = _token_from_env()
+            if token:
+                self.inp_token.setText(token)
         if not token:
             token, ok = QInputDialog.getText(
                 self,
@@ -623,7 +669,8 @@ def _make_label(text: str, size: int = 10, bold: bool = False) -> QLabel:
 # ---------------------------------------------------------------------------
 def main():
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
+    # Style Fusion + affichage de '*' (au lieu de '●') dans les champs mot de passe
+    app.setStyle(_AsteriskStyle("Fusion"))
 
     # Icône de l'application (img/ à la racine du projet)
     icon_path = os.path.normpath(
