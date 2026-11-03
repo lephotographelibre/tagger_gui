@@ -1,4 +1,4 @@
-
+## Python setup and git commands
 ---- setup_python.sh  
 
 
@@ -57,7 +57,5 @@ git branch -r
 # Ensuite checkout de la branche
 git checkout -b nom-branche-local origin/nom-de-la-branche-distante
 
-
-# pour mémoire
-# pip install --upgrade pymupdf --> solve  "import" fitz error
+ 
 
