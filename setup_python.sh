@@ -28,7 +28,7 @@ pip -V
 ----- git 
 
 $ git branch 				# check branches available
-$  git checkout -b youtube-transcript-api 	# create and switch to youtube-transcript-api
+$ git checkout -b youtube-transcript-api 	# create and switch to youtube-transcript-api branch
 $ vi xxx		# do some file modification
 $ git add readme.txt			# stage file to the staging area
 $ git status
