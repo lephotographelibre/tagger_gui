@@ -154,6 +154,29 @@ class _TaggerWorker(QThread):
 
 
 # ---------------------------------------------------------------------------
+# Worker – exécute l'analyse qualité (gui/analyse_qualite.py) dans un thread
+# ---------------------------------------------------------------------------
+class _QualityWorker(QThread):
+    log_line = pyqtSignal(str)  # une ligne de résultat
+    done = pyqtSignal(int)  # 0 = OK, 1 = erreur
+
+    def __init__(self, folder: str):
+        super().__init__()
+        self._folder = folder
+
+    def run(self):
+        try:
+            # Import ici : si une bibliothèque manque, l'erreur s'affiche dans le Log
+            from analyse_qualite import analyser_dossier
+
+            rc = analyser_dossier(self._folder, log=self.log_line.emit)
+        except Exception as exc:
+            self.log_line.emit(f"❌ Erreur inattendue : {exc}")
+            rc = 1
+        self.done.emit(rc)
+
+
+# ---------------------------------------------------------------------------
 # Label cliquable – utilisé pour les miniatures d'images album
 # ---------------------------------------------------------------------------
 class _ClickableLabel(QLabel):
@@ -180,6 +203,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setMinimumSize(1400, 820)
         self._worker: _TaggerWorker | None = None
+        self._quality_worker: _QualityWorker | None = None
 
         # tagger.py est dans src/ ; ce fichier est dans src/gui/
         self._script_path = os.path.normpath(
@@ -253,8 +277,19 @@ class MainWindow(QMainWindow):
         btn_browse = QPushButton("…")
         btn_browse.setFixedWidth(36)
         btn_browse.clicked.connect(self._browse_folder)
+        # Bouton Qualité (fond vert, "Q" blanc, même taille que le bouton "…")
+        self.btn_quality = QPushButton("Q")
+        self.btn_quality.setFixedWidth(36)
+        self.btn_quality.setStyleSheet(
+            "QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }"
+            "QPushButton:hover { background-color: #43A047; }"
+            "QPushButton:pressed { background-color: #388E3C; }"
+        )
+        self.btn_quality.setToolTip("Vérifier la qualité des fichiers MP3")
+        self.btn_quality.clicked.connect(self._check_quality)
         folder_h.addWidget(self.inp_folder)
         folder_h.addWidget(btn_browse)
+        folder_h.addWidget(self.btn_quality)
         form.addRow("Dossier audio :", folder_w)
 
         # Niveau de log
@@ -407,6 +442,41 @@ class MainWindow(QMainWindow):
         )
         if path:
             self.inp_folder.setText(path)
+
+    def _check_quality(self):
+        """Bouton Qualité : analyse les MP3 du « Dossier audio » (résultats dans le Log)."""
+        if self._quality_worker is not None and self._quality_worker.isRunning():
+            return  # analyse déjà en cours
+
+        self._append_log(
+            "<b style='color:#4CAF50'>✓ Lancement vérification de la qualité des fichiers MP3 dans le dossier Audio"
+        )
+
+        # Tableau aligné : pas de retour à la ligne automatique dans le Log
+        self.log_edit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.btn_quality.setEnabled(False)
+
+        self._quality_worker = _QualityWorker(self.inp_folder.text().strip())
+        self._quality_worker.log_line.connect(self._on_quality_line)
+        self._quality_worker.done.connect(self._on_quality_done)
+        self._quality_worker.start()
+
+    def _on_quality_line(self, line: str):
+        esc = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        if line.startswith("❌"):
+            color = "#e53935"
+        elif "⚠️" in line:
+            color = "#fb8c00"
+        elif line.startswith("✅"):
+            color = "#4CAF50"
+        else:
+            color = "#212121"
+        # <pre> : conserve les espaces, donc l'alignement du tableau
+        self.log_edit.append(f"<pre style='margin:0; color:{color}'>{esc}</pre>")
+
+    def _on_quality_done(self, rc: int):
+        self.btn_quality.setEnabled(True)
+        self.log_edit.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
 
     def _resolve_genre(self) -> str | None:
         """Valide le genre saisi.

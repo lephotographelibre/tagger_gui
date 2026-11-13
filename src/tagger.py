@@ -75,6 +75,7 @@ options:
     V2.5.2  Fixed Issue #7 Error Could not parse stylesheet of object _ClickableLabel(0x562b2986ac80)
     V2.5.3  Fix apply_tags() : conserver tracknumber / discnumber lors de la reecriture des tags (Position = Inconnu)
     V2.5.4  Fix Issue #11 LOV for genre
+    V2.5.5  Fix Issue #3 GUI : ajout du bouton Qualite (verification qualite des MP3)
 """
 
 import shutil
@@ -111,7 +112,7 @@ import stat
 # from unidecode import unidecode
 
 # --- Variable Globales -----------------------------------------------------------------------
-VERSION = "V2.5.4"
+VERSION = "V2.5.5"
 DISCOGS_API_URL = "https://api.discogs.com"
 # Le token Discogs n'est plus code en dur : il est fourni par la variable d'environnement
 # DISCOGS_TOKEN (cas du lancement depuis tagger_gui.py) ou TOKEN_DISCOGS (optionnelle) ou saisi via une boite de dialogue

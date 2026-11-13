@@ -5,7 +5,8 @@
 #   1. Charge pyenv depuis ~/.bash_profile
 #   2. Active le virtualenv venv_tagger (Python 3.11.13)
 #   3. Installe les dépendances (requirements.txt) si nécessaire
-#   4. Lance src/gui/tagger_gui.py
+#   4. Contourne le bug « libbz2.so.1.0 introuvable » (analyse qualité, bouton Q)
+#   5. Lance src/gui/tagger_gui.py
 #
 # Option : TOKEN_DISCOGS="votre_token" ./run_tagger_gui.sh  (évite la saisie du token)
 # ---------------------------------------------------------------------------
@@ -52,7 +53,25 @@ else
     echo "[INFO] Dépendances déjà à jour (stamp : $(date -r "$STAMP_FILE"))."
 fi
 
-# ── 4. Lance l'application ────────────────────────────────────────────────
+# ── 4. Contournement libbz2 (analyse qualité MP3 / bouton Q) ─────────────
+# Sur certains systèmes (ex. Fedora Atomic), Python cherche libbz2.so.1.0 alors
+# que le système fournit libbz2.so.1. On crée un lien dans ~/.local/lib et on
+# l'ajoute au chemin de recherche des bibliothèques. Sans effet si inutile.
+LOCAL_LIB="${HOME}/.local/lib"
+if ! "$VENV_PYTHON" -c "import bz2" >/dev/null 2>&1; then
+    for candidate in /lib64/libbz2.so.1 /usr/lib64/libbz2.so.1 \
+                     /usr/lib/x86_64-linux-gnu/libbz2.so.1.0; do
+        if [ -e "$candidate" ]; then
+            mkdir -p "$LOCAL_LIB"
+            ln -sf "$candidate" "${LOCAL_LIB}/libbz2.so.1.0"
+            echo "[INFO] Contournement libbz2 : lien créé depuis ${candidate}"
+            break
+        fi
+    done
+fi
+export LD_LIBRARY_PATH="${LOCAL_LIB}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+
+# ── 5. Lance l'application ────────────────────────────────────────────────
 echo "[INFO] Démarrage de tagger_gui …"
 # Le token Discogs n'est plus défini ici. Il est optionnel : si la variable
 # d'environnement TOKEN_DISCOGS est renseignée au lancement, elle est utilisée

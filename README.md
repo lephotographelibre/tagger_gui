@@ -6,14 +6,15 @@ Tagger GUI is a small desktop application that **automatically tags your MP3 alb
 
 You give it the **barcode** printed on the back of a CD and the **folder** that contains the ripped MP3 files. It finds the album on Discogs, then writes the correct artist, album, track titles, genre, year, composer and cover art into every file. It also shows you the resulting tags and the audio quality of each track in a table.
 
-[![tagger_GUI](img/tagger_GUI.png)](img/tagger_GUI.png)
+[![tagger_GUI](img/V255_avec_BoutonQ.jpg)](img/V255_avec_BoutonQ.jpg)
 
-The project has two parts:
+The project has three parts:
 
 | File | Role |
 |------|------|
 | `src/tagger.py` | The engine. A command-line script that talks to Discogs and writes the ID3 tags. It can be used on its own. |
 | `src/gui/tagger_gui.py` | The Qt6 graphical interface. It collects the parameters, runs `tagger.py` in the background, and displays the log, the tag table and the album images. |
+| `src/gui/analyse_qualite.py` | The audio quality checker used by the **Q button**. It detects "fake" high-bitrate MP3 files. It can also be used on its own. |
 
 ---
 
@@ -25,13 +26,14 @@ The project has two parts:
 4. [Installation and Python setup](#installation-and-python-setup)
 5. [Getting a Discogs token](#getting-a-discogs-token)
 6. [Usage](#usage)
-7. [Parameters reference](#parameters-reference)
-8. [What gets written to your files](#what-gets-written-to-your-files)
-9. [Discogs API documentation](#discogs-api-documentation)
-10. [Project layout](#project-layout)
-11. [Security notes](#security-notes)
-12. [Known limitations](#known-limitations)
-13. [Troubleshooting](#troubleshooting)
+7. [Audio quality check (Q button)](#audio-quality-check-q-button)
+8. [Parameters reference](#parameters-reference)
+9. [What gets written to your files](#what-gets-written-to-your-files)
+10. [Discogs API documentation](#discogs-api-documentation)
+11. [Project layout](#project-layout)
+12. [Security notes](#security-notes)
+13. [Known limitations](#known-limitations)
+14. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -45,6 +47,7 @@ The project has two parts:
 - Fills in missing track numbers and titles from the file names before tagging.
 - **Makes a backup** of your folder before changing anything.
 - Analyses the **audio quality** (bitrate and sample rate) of each MP3 and shows it with a colour code.
+- **Q button:** checks whether your MP3 files are really as good as their bitrate claims, by looking for the sharp high-frequency cut-off typical of low-quality sources re-encoded at a high bitrate. A spectrogram image is created only for doubtful tracks.
 - The Discogs token is **never stored in the code**. It is read from an environment variable or typed in a dialog box.
 
 ---
@@ -95,7 +98,7 @@ In order, the script does the following:
 | **Discogs account** | Free. Needed to generate a personal access token. |
 | **Internet access** | To reach `api.discogs.com`. |
 | **MP3 files** | One album per folder. Only `.mp3` files are tagged. |
-| **Python packages** | `PyQt6`, `mutagen`, `requests`, `tabulate` (see below). |
+| **Python packages** | `PyQt6`, `mutagen`, `requests`, `tabulate`, plus `numpy`, `pandas`, `librosa`, `soundfile`, `matplotlib` and `tqdm` for the quality check (see below). |
 | **Tkinter** *(optional)* | Used for the token dialog when you run `tagger.py` on its own. If it is missing, the script asks for the token in the terminal instead. |
 
 ---
@@ -130,20 +133,29 @@ pyenv activate venv_tagger
 
 ### 3. Install the dependencies
 
-Create a `requirements.txt` file at the root of the project with this content:
+The `requirements.txt` file at the root of the project contains:
 
 ```text
-PyQt6
-mutagen
-requests
-tabulate
+PyQt6>=6.10.0
+mutagen>=1.47.0
+requests>=2.31.0
+tabulate>=0.9.0
+# --- MP3 quality check (Q button, src/gui/analyse_qualite.py) ---
+numpy>=1.26.0
+pandas>=2.1.0
+librosa>=0.10.1
+soundfile>=0.12.1
+matplotlib>=3.8.0
+tqdm>=4.66.0
 ```
 
-Then install it:
+Install it:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+> The quality-check packages (especially `librosa`) are fairly large, so the first installation can take a few minutes.
 
 ### 4. Linux only: Qt system library
 
@@ -201,7 +213,7 @@ To avoid typing it each time, you can add this line to your `~/.bash_profile` (o
 export TOKEN_DISCOGS="your_token_here"
 ```
 
-The launcher loads `pyenv`, activates the `venv_tagger` environment, installs the dependencies from `requirements.txt` if needed, and starts the application.
+The launcher loads `pyenv`, activates the `venv_tagger` environment, installs the dependencies from `requirements.txt` if needed, applies the `libbz2` workaround if it is needed (see [Troubleshooting](#troubleshooting)), and starts the application.
 
 **Or directly with Python:**
 
@@ -218,6 +230,7 @@ python src/gui/tagger_gui.py
 4. Follow the colour-coded log at the bottom. Errors are red, warnings orange.
 5. When it finishes, the **track table** on the right and the **album images** on the left refresh automatically. Click an image thumbnail to open it full size.
 6. The **Qualité** column is colour-coded from red (low) to green (excellent). *Rafraîchir tableau* reloads the table at any time.
+7. Click the green **Q** button, next to the folder field, to check the real quality of the MP3 files (see the next section).
 
 ### Option B – Command line
 
@@ -248,6 +261,124 @@ Use `python src/tagger.py --help` for the built-in help.
 
 ---
 
+## Audio quality check (Q button)
+
+The green **Q** button, next to the *Dossier audio* field, checks the MP3 files of that folder. The results are printed in the **Log** area, after the message "Lancement vérification de la qualité…". Nothing is written to your tags, and **no CSV report is created**.
+
+It does not change your files. You can use it before or after tagging.
+
+### Why it is useful
+
+The *Qualité* column of the table only reads the **declared bitrate** (for example 320 kbps). But a low-quality file can be re-encoded at 320 kbps without gaining any quality: the label says "320" while the sound is not better than 128 kbps.
+
+A low-quality MP3 has a typical sign: the sound **stops abruptly at a given pitch**, like a cut with scissors (for example at 16 kHz, where a real 320 kbps file goes up to about 20 kHz). The checker looks for this cut-off.
+
+### What it does
+
+1. Reads the MP3 files directly in the *Dossier audio* folder (sub-folders are **not** scanned).
+2. Reads the technical information of each file: bitrate, bitrate mode (CBR/VBR), sample rate, channels, duration.
+3. Listens to the first 60 seconds of each file and looks for the **largest sudden drop in sound level** between 4,000 Hz and 21,500 Hz.
+4. If the drop is at least **15 dB**, it is a clear cut-off. Its frequency (`cutoff_hz`) is turned into an estimated quality.
+5. Compares this estimate with the declared bitrate and raises an alert if they do not match.
+6. Creates a **spectrogram** (a picture of the sound by pitch over time) **only for doubtful tracks**.
+7. Prints a table of results and a few statistics.
+
+The files are analysed in parallel (4 at a time), in the background, so the window stays usable. The Q button is greyed out while the analysis runs.
+
+### Example of result
+
+```text
+🔍 Analyse de 23 fichier(s) MP3...
+📁 Dossier de l'album : /home/me/Audio/MP3
+🎚️  Seuil de chute     : 15 dB
+
+Analyse: 100%|██████████████████████████████████████| 23/23 [00:02<00:00,  7.99fichier/s]
+
+✅ Aucune piste douteuse détectée → pas de spectrogramme généré.
+
+fichier                                  bitrate_kbps  bitrate_mode     cutoff_hz  estimated_quality      alerte
+01 - Prelude - Suite I en Re Majeur.mp3  320           BitrateMode.CBR  20144      Excellent (~320 kbps)
+...
+
+STATISTIQUES
+Bitrate moyen déclaré        : 320 kbps
+Cutoff moyen (si détecté)    : 20140 Hz
+Sans coupure franche         : 0
+Pistes douteuses             : 0
+```
+
+### How to read the results
+
+| Column | Meaning |
+|--------|---------|
+| `bitrate_kbps` | Bitrate declared in the file. |
+| `bitrate_mode` | `CBR` (constant) or `VBR`/`ABR` (variable). |
+| `cutoff_hz` | Pitch where the sound is abruptly cut. Empty if no clear cut-off was found. |
+| `estimated_quality` | Quality deduced from the cut-off (table below). It is an **indication**, not a measurement. |
+| `alerte` | A warning if the file looks worse than its declared bitrate. |
+
+**Estimated quality from the cut-off:**
+
+| Cut-off | Estimated quality |
+|---------|-------------------|
+| 19,800 Hz or more | Excellent (~320 kbps) |
+| 19,500 – 19,799 Hz | Très bon (~256 kbps) |
+| 18,500 – 19,499 Hz | Bon (~192 kbps) |
+| 17,000 – 18,499 Hz | Moyen (~160 kbps) |
+| 15,500 – 16,999 Hz | Faible (~128 kbps) |
+| Below 15,500 Hz | Très faible (< 128 kbps) |
+| No clear cut-off | "Pas de coupure franche détectée" |
+
+> **No cut-off found does not mean "excellent".** It only means the checker saw no sharp drop. The file is then not suspected, but it is not certified either.
+
+**Alerts** (a track is then marked as *doubtful* and gets a spectrogram):
+
+| Alert | Condition |
+|-------|-----------|
+| ⚠️ FORT SUSPECT (320 kbps avec cutoff bas) | Declared bitrate ≥ 320 kbps and cut-off below 19,500 Hz |
+| ⚠️ Suspect (haut bitrate + cutoff trop bas) | Declared bitrate ≥ 256 kbps and cut-off below 18,500 Hz |
+| ⚠️ Qualité inférieure au bitrate annoncé | Declared bitrate ≥ 192 kbps and cut-off below 17,000 Hz |
+| ℹ️ Débit faible (< 128 kbps) | Declared bitrate under 128 kbps (information only, not marked as doubtful) |
+| ❌ Fichier illisible | The file cannot be read as an MP3 |
+
+### Spectrograms
+
+If at least one track is doubtful, a `spectrograms_suspects/` folder is created **inside the audio folder**. It contains one picture per doubtful track, named `<file name>_suspect.png`. A dashed line shows the detected cut-off. A healthy file shows sound up to about 20 kHz; a doubtful one shows an empty band above the cut-off.
+
+If no track is doubtful, no folder and no picture is created.
+
+### Error messages
+
+Problems are shown in **red** in the Log, and the application keeps working:
+
+- no folder entered, folder not found, path that is not a folder, or access denied;
+- no MP3 file in the folder;
+- a missing Python library (the message gives the `pip install` command to run);
+- an unreadable MP3 file (reported in the table and at the end of the statistics, the other files are still analysed);
+- any unexpected error.
+
+### Use without the GUI
+
+The checker is a normal Python module and can be tested alone:
+
+```bash
+python src/gui/analyse_qualite.py "/home/me/Audio/MP3/"
+```
+
+Its main function is `analyser_dossier(dossier, log=print, seuil_chute=15, jobs=4)`. It sends every line of output to the `log` function and returns `0` if all went well, `1` if there was an error.
+
+### Adjusting the sensitivity
+
+The settings are constants at the top of `src/gui/analyse_qualite.py`:
+
+| Constant | Default | Effect |
+|----------|---------|--------|
+| `DROP_DB_DEFAULT` | `15` | Minimal drop (in dB) to call it a cut-off. Raise it (e.g. 20) if you get too many false alarms, lower it (e.g. 10) to detect more. |
+| `SEARCH_MIN_HZ` / `SEARCH_MAX_HZ` | `4000` / `21500` | Range of pitches where the cut-off is searched. |
+| `LOW_BITRATE_KBPS` | `128` | Under this bitrate, an information message is shown. |
+
+---
+
 ## Parameters reference
 
 | GUI field | Command line | Description |
@@ -261,6 +392,7 @@ Use `python src/tagger.py --help` for the built-in help.
 | Interprète | `-i`, `--interprete` | Forces the artist name. |
 | Titre album | `-a`, `--album` | Forces the album title. Optional: if omitted or empty, the Discogs title is used. The value is written in the `album` tag of every track and is also used in the final folder name `Artist -- Album Title`. |
 | Discogs Token | *(environment)* | See [Getting a Discogs token](#getting-a-discogs-token). |
+| **Q** button | *(none, GUI only)* | Runs the [audio quality check](#audio-quality-check-q-button) on the *Dossier audio* folder. Also available alone: `python src/gui/analyse_qualite.py FOLDER`. |
 
 ---
 
@@ -286,6 +418,7 @@ Use `python src/tagger.py --help` for the built-in help.
 |------|------|---------|
 | `MP3_SAVE/` | Before any change | Backup of the original files |
 | `album_image_N.jpg` | After tagging | All images of the release, saved inside the audio folder |
+| `spectrograms_suspects/` | Q button, only if a track is doubtful | One spectrogram picture per doubtful MP3, inside the audio folder |
 | `Artist -- Album/` | At the end | Copy of the tagged album with a clean name (`/` in names is replaced by `-`). The album part is the `--album` value if given, otherwise the Discogs title |
 
 ---
@@ -414,10 +547,13 @@ tagger_gui/
 └── src/
     ├── tagger.py            # Command-line tagging engine
     └── gui/
-        └── tagger_gui.py    # Qt6 graphical interface
+        ├── tagger_gui.py        # Qt6 graphical interface
+        └── analyse_qualite.py   # MP3 quality checker (Q button)
 ```
 
 The GUI starts `tagger.py` as a separate process and passes the token through an environment variable, so the token never appears in the command line or in the log.
+
+`analyse_qualite.py` must stay in the same folder as `tagger_gui.py`: the GUI imports it from there when you click **Q**.
 
 ---
 
@@ -445,7 +581,10 @@ The GUI starts `tagger.py` as a separate process and passes the token through an
 - The barcode search reads **only the first page** of results.
 - One folder must contain **one album**.
 - The default audio folder in the command line and in the GUI is a personal path. Set your own each time, or edit it in the code.
-- The log messages of `tagger.py` are partly in French.
+- The log messages of `tagger.py` and of the quality check are partly in French.
+- The quality check gives an **estimate**. A very quiet or very low-pitched recording (some classical or acoustic music) may show no clear cut-off even if it is a poor file, and a good file can occasionally trigger a false alarm. A spectrogram helps to confirm.
+- It only analyses the **first 60 seconds** of each track and does **not** scan sub-folders.
+- The *Qualité* colour column of the table is based on the **declared bitrate only**, whereas the Q button also looks at the **sound itself**. The two can disagree, and the Q result is the more reliable one.
 
 ---
 
@@ -461,6 +600,10 @@ The GUI starts `tagger.py` as a separate process and passes the token through an
 | Wrong album title (or you prefer your own) | Use `-a "Album Title"` (GUI: *Titre album* field) to force the value. It is used for the `album` tag and for the final folder name. |
 | The window does not open on Linux (`xcb` error) | Install the system library: `sudo apt install libxcb-cursor0`. |
 | `run_tagger_gui.sh` says the virtualenv is not found | Create it with `pyenv virtualenv 3.11.13 venv_tagger`, or adapt `VENV_NAME` and `PYTHON_VERSION` at the top of the script. |
+| Q button: "Bibliothèque manquante" in the log | A package of the quality check is not installed. Run `pip install -r requirements.txt` in the `venv_tagger` environment. |
+| Q button: `libbz2.so.1.0: cannot open shared object file` | The system provides `libbz2.so.1` but Python looks for `libbz2.so.1.0`. `run_tagger_gui.sh` fixes this automatically. If you start the GUI directly, run: `mkdir -p ~/.local/lib && ln -s /lib64/libbz2.so.1 ~/.local/lib/libbz2.so.1.0 && export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"`. |
+| Q button: "Aucun fichier MP3 trouvé" | The *Dossier audio* folder has no `.mp3` directly inside it (sub-folders are not scanned). Check the path. |
+| Q button flags a file you think is good | Open its spectrogram in `spectrograms_suspects/`. If the sound really reaches high pitches, raise `DROP_DB_DEFAULT` (see [Adjusting the sensitivity](#adjusting-the-sensitivity)). |
 | No token dialog appears when running `tagger.py` alone | Tkinter is not installed. The token is then requested in the terminal. |
 
 ---
