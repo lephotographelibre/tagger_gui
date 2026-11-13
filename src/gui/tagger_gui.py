@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QInputDialog,
     QLabel,
+    QMessageBox,
     QLineEdit,
     QPushButton,
     QComboBox,
@@ -69,6 +70,32 @@ def _evaluate_quality(bitrate_kbps: float) -> tuple[str, str, str]:
         if bitrate_kbps >= threshold:
             return label, bg, fg
     return "Faible", "#D32F2F", "#ffffff"
+
+# Fix Issue #11
+# ---------------------------------------------------------------------------
+# Liste de valeurs proposées pour le champ Genre.
+# L'utilisateur peut aussi saisir un genre absent de la liste (après
+# confirmation) ou laisser le champ vide (le genre Discogs est alors utilisé).
+# ---------------------------------------------------------------------------
+_GENRES: list[str] = [
+    "Balado",
+    "Baroque",
+    "Blues",
+    "Chanson Française",
+    "Classique",
+    "Concert",
+    "Country",
+    "Jazz",
+    "Musique de Film",
+    "Musique du Monde",
+    "Pop",
+    "Opéra",
+    "Oriental",
+    "R&B",
+    "Reggae",
+    "Rock",
+    "Soul",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -240,9 +267,18 @@ class MainWindow(QMainWindow):
         form.addRow("", self.chk_compositeur)
 
         # Genre
-        self.inp_genre = QLineEdit()
-        self.inp_genre.setPlaceholderText("(optionnel)")
-        form.addRow("Genre :", self.inp_genre)
+        # Liste de valeurs modifiable : choix dans la liste, saisie libre
+        # possible (confirmée à l'exécution) ou champ vide (genre Discogs).
+        self.cmb_genre = QComboBox()
+        self.cmb_genre.setEditable(True)
+        self.cmb_genre.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.cmb_genre.addItem("")  # entrée vide = non renseigné
+        self.cmb_genre.addItems(_GENRES)
+        self.cmb_genre.setCurrentIndex(0)
+        self.cmb_genre.lineEdit().setPlaceholderText(
+            "(optionnel – sinon genre Discogs)"
+        )
+        form.addRow("Genre :", self.cmb_genre)
 
         # Release ID
         self.inp_release = QLineEdit()
@@ -372,6 +408,50 @@ class MainWindow(QMainWindow):
         if path:
             self.inp_folder.setText(path)
 
+    def _resolve_genre(self) -> str | None:
+        """Valide le genre saisi.
+
+        Retourne :
+          - ""   si le champ est vide (le genre Discogs sera utilisé) ;
+          - le genre de la liste (casse de la liste respectée) s'il existe ;
+          - le nouveau genre s'il est absent de la liste ET que l'utilisateur
+            confirme son ajout (il est alors ajouté à la liste) ;
+          - None si l'utilisateur refuse le nouveau genre (exécution annulée).
+        """
+        genre = self.cmb_genre.currentText().strip()
+        if not genre:
+            return ""
+
+        # Recherche insensible à la casse : « rock » → « Rock »
+        for idx in range(self.cmb_genre.count()):
+            existing = self.cmb_genre.itemText(idx)
+            if existing and existing.casefold() == genre.casefold():
+                self.cmb_genre.setCurrentIndex(idx)
+                return existing
+
+        # Genre inconnu : demande de confirmation
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Question)
+        box.setWindowTitle("Nouveau genre")
+        box.setText("Ce genre n'existe pas dans la liste, Confirmez-vous l'ajout de ce genre ?")
+        box.setInformativeText(f"Genre saisi : « {genre} »")
+        btn_yes = box.addButton("Oui", QMessageBox.ButtonRole.YesRole)
+        btn_no = box.addButton("Non", QMessageBox.ButtonRole.NoRole)
+        box.setDefaultButton(btn_no)
+        box.exec()
+
+        if box.clickedButton() is not btn_yes:
+            self._append_log(
+                "<b style='color:#fb8c00'>Exécution annulée : "
+                "genre non confirmé.</b>"
+            )
+            return None
+
+        # Ajout à la liste (pour la session en cours) et sélection
+        self.cmb_genre.addItem(genre)
+        self.cmb_genre.setCurrentIndex(self.cmb_genre.count() - 1)
+        return genre
+
     def _build_args(self) -> list[str] | None:
         barcode = self.inp_barcode.text().strip()
         if not barcode:
@@ -379,6 +459,11 @@ class MainWindow(QMainWindow):
                 "<b style='color:red'>Erreur : le barcode est obligatoire.</b>"
             )
             return None
+
+        # Genre : validé avant de construire la commande
+        genre = self._resolve_genre()
+        if genre is None:
+            return None  # l'utilisateur a refusé le nouveau genre
 
         args = [
             barcode,
@@ -389,8 +474,8 @@ class MainWindow(QMainWindow):
         ]
         if self.chk_compositeur.isChecked():
             args.append("-c")
-        if g := self.inp_genre.text().strip():
-            args.extend(["-g", g])
+        if genre:
+            args.extend(["-g", genre])
         if r := self.inp_release.text().strip():
             args.extend(["-r", r])
         if i := self.inp_interprete.text().strip():

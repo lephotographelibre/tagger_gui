@@ -40,7 +40,7 @@ $ git branch			# set on main
 $ git merge youtube-transcript-api	# Fast-Forward merge ok
 $ git status			# nothing to commit
 $ git log 			# check the commit
-$ git push			# Push to remote repo
+$ git push			# Push to remote repo 
  
 
 Pour memoire git checkout -b youtube-transcript-api 
