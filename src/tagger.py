@@ -30,6 +30,9 @@ options:
   -a, --album ALBUM_TITLE
                         Titre de l'album pour forcer une valeur si il est present
                         (tag album + nom du repertoire final "Interprete -- Titre album")
+  -A, --artiste_album ARTISTE_ALBUM
+                        Artiste de l'album (tag ID3 TPE2 + nom du repertoire final) pour forcer une valeur
+                        si il est present. Par defaut = artiste du morceau (Discogs ou option -i)
 
     Exemples:
 
@@ -76,6 +79,9 @@ options:
     V2.5.3  Fix apply_tags() : conserver tracknumber / discnumber lors de la reecriture des tags (Position = Inconnu)
     V2.5.4  Fix Issue #11 LOV for genre
     V2.5.5  Fix Issue #3 GUI : ajout du bouton Qualite (verification qualite des MP3)
+    V2.5.6  Artiste de l'album (TPE2) distinct de l'artiste du morceau (TPE1) : option -A/--artiste_album,
+            fonction unique compute_artists() (tags + repertoire, erreur claire si artiste introuvable),
+            colonne 'Artiste album' + alertes (vide / different selon les pistes) dans afficher_infos_album_tabulate()
 """
 
 import shutil
@@ -112,7 +118,7 @@ import stat
 # from unidecode import unidecode
 
 # --- Variable Globales -----------------------------------------------------------------------
-VERSION = "V2.5.5"
+VERSION = "V2.5.6"
 DISCOGS_API_URL = "https://api.discogs.com"
 # Le token Discogs n'est plus code en dur : il est fourni par la variable d'environnement
 # DISCOGS_TOKEN (cas du lancement depuis tagger_gui.py) ou TOKEN_DISCOGS (optionnelle) ou saisi via une boite de dialogue
@@ -136,6 +142,8 @@ RELEASE_ID = ""
 INTERPRETE = ""
 # V2.5.0  Titre d'album force ("default" = utiliser le titre Discogs)
 ALBUM_FORCE = "default"
+# V2.5.6  Artiste de l'album force ("default" = meme valeur que l'artiste du morceau)
+ALBUM_ARTIST_FORCE = "default"
 
 
 def ask_discogs_token() -> str:
@@ -258,6 +266,18 @@ def cmdline_args():
         type=str,
         help="Titre de l'album pour forcer une valeur si il est present "
         "(utilise pour le tag album et pour le nom du repertoire final)",
+        default="default",
+    )
+
+    # V2.5.6  Artiste de l'album distinct de l'artiste du morceau (tag ID3 TPE2)
+    parser.add_argument(
+        "-A",
+        "--artiste_album",
+        dest="ALBUM_ARTIST_FORCE",
+        type=str,
+        help="Artiste de l'album pour forcer une valeur si il est present "
+        "(tag artiste de l'album + nom du repertoire final). "
+        "Par defaut = artiste du morceau (Discogs ou option -i)",
         default="default",
     )
 
@@ -440,6 +460,79 @@ def get_subtrack(tracklist_list):
     return merge_tracklist_list
 
 
+# V2.5.6  Calcul UNIQUE de l'artiste du morceau et de l'artiste de l'album
+def compute_artists(release_data, interprete="default", album_artist_force="default"):
+    """
+    Calcule, en un seul endroit, l'artiste du morceau (tag ARTIST / TPE1) et
+    l'artiste de l'album (tag ALBUMARTIST / TPE2). Ces deux valeurs servent pour
+    les tags ID3 ET pour le nom du repertoire final.
+
+    Regles :
+        1. artiste du morceau = 1er artiste de la release Discogs
+        2. si l'option -i (interprete) est renseignee, elle remplace l'artiste du morceau
+        3. artiste de l'album = artiste du morceau (calcule aux etapes 1-2)
+        4. si l'option -A (artiste_album) est renseignee, elle remplace l'artiste de l'album
+
+    Une valeur forcee vide (ex : -i "") est ignoree avec un avertissement.
+
+    Args:
+        release_data: dictionnaire JSON de la release Discogs
+        interprete: valeur de l'option -i ("default" si absente)
+        album_artist_force: valeur de l'option -A ("default" si absente)
+
+    Returns:
+        tuple (artist, album_artist) : deux chaines non vides
+
+    Raises:
+        ValueError: si aucun artiste n'est disponible (message explicite)
+    """
+
+    def _clean(value):
+        # None, non-chaine ou chaine vide/espaces --> ""
+        return value.strip() if isinstance(value, str) else ""
+
+    # 1 - Artiste Discogs (cle absente, liste vide, element invalide ou nom vide)
+    discogs_artist = ""
+    artists = release_data.get("artists") if isinstance(release_data, dict) else None
+    if isinstance(artists, list) and artists and isinstance(artists[0], dict):
+        discogs_artist = _clean(artists[0].get("name"))
+    if not discogs_artist:
+        logging.warning(
+            "--- compute_artists() - Aucun nom d'artiste dans les donnees Discogs de la release"
+        )
+
+    # 2 - Option -i (interprete)
+    artist = discogs_artist
+    if interprete != "default":
+        forced = _clean(interprete)
+        if forced:
+            artist = forced
+        else:
+            logging.warning(
+                "--- compute_artists() - Option -i (interprete) vide : ignoree"
+            )
+
+    if not artist:
+        raise ValueError(
+            "Impossible de determiner l'artiste : la release Discogs n'en contient pas "
+            "et l'option -i (interprete) n'est pas renseignee. "
+            "Relancez avec -i \"Nom de l'artiste\" (ou avec un autre Release ID)."
+        )
+
+    # 3 et 4 - Artiste de l'album : par defaut = artiste du morceau, sauf option -A
+    album_artist = artist
+    if album_artist_force != "default":
+        forced = _clean(album_artist_force)
+        if forced:
+            album_artist = forced
+        else:
+            logging.warning(
+                "--- compute_artists() - Option -A (artiste de l'album) vide : ignoree"
+            )
+
+    return artist, album_artist
+
+
 # Recupere les donnees de la release de discosg
 def prepare_new_tags(
     release_data,
@@ -449,6 +542,7 @@ def prepare_new_tags(
     ALBUM_TITLE,
     complete_trackname_dict,
     composer_dict,
+    ALBUM_ARTIST=None,
 ):
     """Prepare un dictionnaire de nouveaux tags e partir des donnees Discogs."""
     if not release_data:
@@ -457,8 +551,10 @@ def prepare_new_tags(
     # Gestion des artistes multiples
     # artist_name = ', '.join([artist['name'] for artist in release_data.get('artists', [])])
 
-    # Force l'utilisation de l'artiste passe en parametre
-    artist_name = ARTIST
+    # V2.5.6  Artiste de l'album : valeur passee en parametre (voir compute_artists()),
+    #         a defaut (appel sans ALBUM_ARTIST) = artiste du morceau
+    if not ALBUM_ARTIST:
+        ALBUM_ARTIST = ARTIST
 
     # track_info = release_data.get('tracklist', [])[track_number - 1]
 
@@ -503,7 +599,7 @@ def prepare_new_tags(
 
     new_tags = {
         "artist": ARTIST,
-        "albumartist": ARTIST,
+        "albumartist": ALBUM_ARTIST,
         "album": ALBUM_TITLE,
         "title": complete_trackname_dict[track_number],
         "genre": genre_album,
@@ -649,9 +745,21 @@ def afficher_infos_album_tabulate(chemin_dossier):
     affiche sous forme de tableau elegant en utilisant 'tabulate'.
     """
     donnees_tableau = []
+    # V2.5.6  Suivi de l'artiste de l'album pour le controle final
+    valeurs_artiste_album = []
+    fichiers_sans_artiste_album = []
 
     # Definition des en-tetes du tableau
-    en_tetes = ["Chemin", "Position", "Titre", "Artiste", "Album", "Genre"]
+    # V2.5.6  Ajout de la colonne "Artiste album"
+    en_tetes = [
+        "Chemin",
+        "Position",
+        "Titre",
+        "Artiste",
+        "Artiste album",
+        "Album",
+        "Genre",
+    ]
 
     # # Parcourir les fichiers du dossier
     # fichiers_audio = [f for f in os.listdir(chemin_dossier) if f.endswith(('.mp3', '.flac', '.ogg'))]
@@ -681,6 +789,9 @@ def afficher_infos_album_tabulate(chemin_dossier):
             tracknumber = audio.get("tracknumber", ["Inconnu"])[0]  # type: ignore
             titre = audio.get("title", ["Inconnu"])[0]  # type: ignore
             artiste = audio.get("artist", ["Inconnu"])[0]  # type: ignore
+            # V2.5.6  Artiste de l'album (TPE2) : chaine vide si absent ou vide
+            vals_artiste_album = audio.get("albumartist")  # type: ignore
+            artiste_album = str(vals_artiste_album[0]).strip() if vals_artiste_album else ""
             album = audio.get("album", ["Inconnu"])[0]  # type: ignore
             genre = audio.get("genre", ["Inconnu"])[  # type: ignore
                 0
@@ -688,8 +799,20 @@ def afficher_infos_album_tabulate(chemin_dossier):
             # year = audio.get('year', ['Inconnu'])[0]
 
             # Ajouter une ligne au tableau avec les informations
+            if artiste_album:
+                valeurs_artiste_album.append(artiste_album)
+            else:
+                fichiers_sans_artiste_album.append(os.path.basename(chemin_fichier))
             donnees_tableau.append(
-                [chemin_fichier, tracknumber, titre, artiste, album, genre]
+                [
+                    chemin_fichier,
+                    tracknumber,
+                    titre,
+                    artiste,
+                    artiste_album if artiste_album else "(vide)",
+                    album,
+                    genre,
+                ]
             )
         except Exception:
             # Gerer les fichiers qui ne sont pas des fichiers audio valides
@@ -700,6 +823,26 @@ def afficher_infos_album_tabulate(chemin_dossier):
     # Afficher le tableau. Le parametre 'headers' est utilise pour definir les titres de colonnes
     # et 'tablefmt' pour choisir le style du tableau (par exemple, "simple", "grid", "fancy_grid", "pipe", etc.)
     print(tabulate(donnees_tableau, headers=en_tetes, tablefmt="fancy_grid"))
+
+    # V2.5.6  Controle de l'artiste de l'album : alerte si vide ou different selon les pistes
+    if donnees_tableau:
+        if fichiers_sans_artiste_album:
+            logging.warning(
+                f" - afficher_infos_album_tabulate() - ALERTE : artiste de l'album vide ou absent "
+                f"pour {len(fichiers_sans_artiste_album)} fichier(s) : "
+                f"{', '.join(fichiers_sans_artiste_album)}"
+            )
+        valeurs_distinctes = sorted(set(valeurs_artiste_album))
+        if len(valeurs_distinctes) > 1:
+            logging.warning(
+                f" - afficher_infos_album_tabulate() - ALERTE : artiste de l'album different "
+                f"selon les pistes : {valeurs_distinctes}"
+            )
+        elif len(valeurs_distinctes) == 1 and not fichiers_sans_artiste_album:
+            logging.info(
+                f" - afficher_infos_album_tabulate() - Artiste de l'album coherent "
+                f"sur toutes les pistes : '{valeurs_distinctes[0]}'"
+            )
 
 
 # # Funct. Tri l'ordre des fichiers en fonction du tracknumber interne et pas suivant le nom des fichiers
@@ -1418,6 +1561,21 @@ def main():
         )
         sys.exit(1)
 
+    # V2.5.6  Calcul unique de l'artiste du morceau et de l'artiste de l'album
+    #         (tags ID3 ET nom du repertoire final). En cas d'artiste introuvable,
+    #         arret avec un message clair AVANT toute modification de tags.
+    try:
+        ARTIST, ALBUM_ARTIST = compute_artists(
+            release_data, INTERPRETE, ALBUM_ARTIST_FORCE
+        )
+    except ValueError as e:
+        logging.error(f"--- main() - {e}")
+        sys.exit(1)
+    logging.info(
+        f"--- main() - Artiste du morceau = '{ARTIST}' / "
+        f"Artiste de l'album = '{ALBUM_ARTIST}'"
+    )
+
     # V1.3.9 Issue #20 Track number is not correct
     # if len(audio_files) != len(release_data.get("tracklist", [])):
     if len(audio_files) != count_tracks_from_discogs(release_data):
@@ -1477,13 +1635,9 @@ def main():
     # Telechargement de la pochette
     cover_url = release_data.get("images", [{}])[0].get("uri")
     cover_data = download_cover_art(cover_url)
-    # Artiste et Titre de l'album
-    ARTIST = release_data.get("artists", [{}])[0].get("name")
+    # Titre de l'album
+    # V2.5.6  L'artiste et l'artiste de l'album sont calcules plus haut par compute_artists()
     ALBUM_TITLE = release_data.get("title")
-
-    # V1.4.2  Fix issue #22 - Forcer l'utilisation d'un interprete
-    if INTERPRETE != "default":
-        ARTIST = INTERPRETE
 
     # V2.5.0  Forcer le titre de l'album (sinon titre Discogs)
     if ALBUM_FORCE != "default" and ALBUM_FORCE.strip():
@@ -1508,6 +1662,7 @@ def main():
                 ALBUM_TITLE,
                 complete_trackname_dict,
                 composers_dicts,
+                ALBUM_ARTIST,
             )
             # pprint(new_tags)
             # logging.debug(f"--- main() - Modification en cours .... " + str(release_data))
@@ -1550,12 +1705,10 @@ def main():
 
     # 6. Mise aux normes nom de repertoire MP3 -> "ARTIST -- ALBUM_TITLE"
 
-    # !! en supprimant les caracteres / dans le titre de l'album
-    ARTIST = release_data.get("artists", [{}])[0].get("name").replace("/", "-")
-
-    # V1.4.2  Fix issue #22 - Forcer l'utilisation d'un interprete
-    if INTERPRETE != "default":
-        ARTIST = INTERPRETE
+    # !! en supprimant les caracteres / dans l'artiste et dans le titre de l'album
+    # V2.5.6  Le repertoire utilise l'artiste de l'album, calcule par compute_artists()
+    #         (meme valeur que dans les tags ID3 ; = interprete par defaut)
+    ALBUM_ARTIST_DIR = ALBUM_ARTIST.replace("/", "-")
 
     # V2.5.0  Titre d'album force prioritaire sur le titre Discogs
     if ALBUM_FORCE != "default" and ALBUM_FORCE.strip():
@@ -1564,7 +1717,7 @@ def main():
         ALBUM_TITLE = release_data.get("title").replace("/", "-")
 
     AUDIO_FOLDER_SAVE = os.path.join(
-        Path(AUDIO_FOLDER).parent, f"{ARTIST} -- {ALBUM_TITLE}"
+        Path(AUDIO_FOLDER).parent, f"{ALBUM_ARTIST_DIR} -- {ALBUM_TITLE}"
     )
     copier_repertoire(AUDIO_FOLDER, AUDIO_FOLDER_SAVE)
     logging.info(f"--- main() ---- Sauvegarde finale dans  {AUDIO_FOLDER_SAVE}")
@@ -1616,9 +1769,11 @@ if __name__ == "__main__":
     INTERPRETE = args.INTERPRETE
     # V2.5.0  Titre d'album force
     ALBUM_FORCE = args.ALBUM_FORCE
+    # V2.5.6  Artiste de l'album force
+    ALBUM_ARTIST_FORCE = args.ALBUM_ARTIST_FORCE
 
     logging.info(
-        f"------ Variables Globales : {BARCODE}  +  {AUDIO_FOLDER} + args.compositeur= {args.compositeur} + GENRE = {GENRE} + RELEASE_ID = {RELEASE_ID} + INTERPRETE = {INTERPRETE} + ALBUM_FORCE = {ALBUM_FORCE} ----------"
+        f"------ Variables Globales : {BARCODE}  +  {AUDIO_FOLDER} + args.compositeur= {args.compositeur} + GENRE = {GENRE} + RELEASE_ID = {RELEASE_ID} + INTERPRETE = {INTERPRETE} + ALBUM_FORCE = {ALBUM_FORCE} + ALBUM_ARTIST_FORCE = {ALBUM_ARTIST_FORCE} ----------"
     )
 
     # - Token Discogs : variable d'environnement ou boite de dialogue de saisie

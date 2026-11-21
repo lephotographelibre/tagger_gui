@@ -325,6 +325,13 @@ class MainWindow(QMainWindow):
         self.inp_interprete.setPlaceholderText("(optionnel)")
         form.addRow("Interprète :", self.inp_interprete)
 
+        # V2.5.6  Artiste de l'album (optionnel : sinon = interprète / artiste Discogs)
+        self.inp_albumartist = QLineEdit()
+        self.inp_albumartist.setPlaceholderText(
+            "(optionnel – sinon = interprète / artiste Discogs)"
+        )
+        form.addRow("Artiste de l'album :", self.inp_albumartist)
+
         # Titre de l'album (optionnel : sinon titre Discogs)
         self.inp_album = QLineEdit()
         self.inp_album.setPlaceholderText("(optionnel – sinon titre Discogs)")
@@ -396,7 +403,17 @@ class MainWindow(QMainWindow):
         vbox.addWidget(_make_label("Pistes audio", size=12, bold=True))
 
         # Tableau
-        headers = ["Fichier", "N°", "Titre", "Artiste", "Album", "Genre", "Qualité"]
+        # V2.5.6  Colonne "Artiste album" ajoutée (index 4) : Qualité passe à l'index 7
+        headers = [
+            "Fichier",
+            "N°",
+            "Titre",
+            "Artiste",
+            "Artiste album",
+            "Album",
+            "Genre",
+            "Qualité",
+        ]
         self.table = QTableWidget()
         self.table.setColumnCount(len(headers))
         self.table.setHorizontalHeaderLabels(headers)
@@ -405,7 +422,7 @@ class MainWindow(QMainWindow):
         hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)  # Fichier
         hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # N°
         hdr.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)  # Titre
-        for c in (3, 4, 5, 6):
+        for c in (3, 4, 5, 6, 7):
             hdr.setSectionResizeMode(c, QHeaderView.ResizeMode.ResizeToContents)
 
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -429,6 +446,11 @@ class MainWindow(QMainWindow):
             lh.addSpacing(6)
         lh.addStretch()
         vbox.addWidget(legend)
+
+        # V2.5.6  Contrôle de l'artiste de l'album (vide / différent selon les pistes)
+        self.lbl_albumartist_check = QLabel("")
+        self.lbl_albumartist_check.setWordWrap(True)
+        vbox.addWidget(self.lbl_albumartist_check)
 
         return panel
 
@@ -550,6 +572,9 @@ class MainWindow(QMainWindow):
             args.extend(["-r", r])
         if i := self.inp_interprete.text().strip():
             args.extend(["-i", i])
+        # V2.5.6  Artiste de l'album
+        if aa := self.inp_albumartist.text().strip():
+            args.extend(["-A", aa])
         if a := self.inp_album.text().strip():
             args.extend(["-a", a])
         return args
@@ -632,19 +657,23 @@ class MainWindow(QMainWindow):
         folder = self.inp_folder.text().strip()
         self.table.setRowCount(0)
         if not folder or not os.path.isdir(folder):
+            self._update_albumartist_check([])
             return
 
         tracks = _collect_tracks(folder)
         self.table.setRowCount(len(tracks))
+        # V2.5.6  Contrôle de l'artiste de l'album (étiquette sous le tableau)
+        inconsistent = self._update_albumartist_check(tracks)
 
         for row, track in enumerate(tracks):
-            # Colonnes 0-5 : fichier, N°, titre, artiste, album, genre
+            # Colonnes 0-6 : fichier, N°, titre, artiste, artiste de l'album, album, genre
             for col, val in enumerate(
                 [
                     track["filename"],
                     track["tracknumber"],
                     track["title"],
                     track["artist"],
+                    track["albumartist"],
                     track["album"],
                     track["genre"],
                 ]
@@ -653,15 +682,76 @@ class MainWindow(QMainWindow):
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 if col == 0:
                     item.setToolTip(track["path"])  # chemin complet en tooltip
+                elif col == 4:
+                    # V2.5.6  Artiste de l'album : rouge si vide, violet si différent
+                    self._mark_albumartist_item(item, val, inconsistent)
                 self.table.setItem(row, col, item)
 
-            # Colonne 6 : qualité avec code couleur
+            # Colonne 7 : qualité avec code couleur
             label, bg, fg = track["quality"]
             q_item = QTableWidgetItem(label)
             q_item.setFlags(q_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             q_item.setBackground(QColor(bg))
             q_item.setForeground(QColor(fg))
-            self.table.setItem(row, 6, q_item)
+            self.table.setItem(row, 7, q_item)
+
+    # V2.5.6  Contrôle de l'artiste de l'album ───────────────────────
+    @staticmethod
+    def _mark_albumartist_item(item: QTableWidgetItem, value: str, inconsistent: bool):
+        """Colore la cellule « Artiste album » : rouge si vide, violet si différent selon les pistes."""
+        if not value.strip():
+            item.setText("(vide)")
+            item.setBackground(QColor("#D32F2F"))
+            item.setForeground(QColor("#ffffff"))
+            item.setToolTip("Artiste de l'album vide ou absent")
+        elif inconsistent:
+            item.setBackground(QColor("#7B1FA2"))
+            item.setForeground(QColor("#ffffff"))
+            item.setToolTip("Artiste de l'album différent selon les pistes")
+
+    def _update_albumartist_check(self, tracks: list[dict]) -> bool:
+        """Met à jour l'étiquette de contrôle sous le tableau.
+
+        Alerte si l'artiste de l'album est vide/absent sur au moins une piste,
+        ou s'il est différent selon les pistes.
+
+        Retourne True si l'artiste de l'album diffère selon les pistes.
+        """
+        if not tracks:
+            self.lbl_albumartist_check.setText("")
+            self.lbl_albumartist_check.setStyleSheet("")
+            return False
+
+        values = [t.get("albumartist", "").strip() for t in tracks]
+        distinct = sorted({v for v in values if v})
+        nb_empty = sum(1 for v in values if not v)
+        inconsistent = len(distinct) > 1
+
+        messages = []
+        if nb_empty:
+            messages.append(
+                f"⚠ Artiste de l'album vide ou absent pour {nb_empty} piste(s) "
+                f"sur {len(tracks)}."
+            )
+        if inconsistent:
+            messages.append(
+                "⚠ Artiste de l'album différent selon les pistes : "
+                + " | ".join(distinct)
+            )
+
+        if messages:
+            self.lbl_albumartist_check.setText("\n".join(messages))
+            self.lbl_albumartist_check.setStyleSheet(
+                "color:#E65100; font-weight:bold;"
+            )
+        else:
+            self.lbl_albumartist_check.setText(
+                f"✓ Artiste de l'album cohérent : {distinct[0]}"
+            )
+            self.lbl_albumartist_check.setStyleSheet(
+                "color:#2E7D32; font-weight:bold;"
+            )
+        return inconsistent
 
     # ── Images ────────────────────────────────────────────────────────
     def _refresh_images(self):
@@ -767,11 +857,11 @@ def _collect_tracks(folder: str) -> list[dict]:
             # Tags via EasyID3
             try:
                 tags = EasyID3(fp)
-                for key in ("tracknumber", "title", "artist", "album", "genre"):
+                for key in ("tracknumber", "title", "artist", "albumartist", "album", "genre"):
                     vals = tags.get(key)
                     info[key] = vals[0] if vals else ""
             except Exception:
-                for key in ("tracknumber", "title", "artist", "album", "genre"):
+                for key in ("tracknumber", "title", "artist", "albumartist", "album", "genre"):
                     info.setdefault(key, "")
 
             # Clé de tri numérique (gère le format "3/12")
