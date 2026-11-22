@@ -235,3 +235,7 @@ var/
 # Les dossiers packaging n'ont pas besoin d'être dans l'image finale
  
 src/gui/__pycache__/tagger_gui.cpython-311.pyc
+
+__pycache__/
+*.py[cod]
+*$py.class

@@ -82,6 +82,7 @@ options:
     V2.5.6  Artiste de l'album (TPE2) distinct de l'artiste du morceau (TPE1) : option -A/--artiste_album,
             fonction unique compute_artists() (tags + repertoire, erreur claire si artiste introuvable),
             colonne 'Artiste album' + alertes (vide / different selon les pistes) dans afficher_infos_album_tabulate()
+    V2.5.7  Fix #17 run_tagger.sh missing
 """
 
 import shutil
