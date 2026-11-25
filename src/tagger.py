@@ -83,6 +83,7 @@ options:
             fonction unique compute_artists() (tags + repertoire, erreur claire si artiste introuvable),
             colonne 'Artiste album' + alertes (vide / different selon les pistes) dans afficher_infos_album_tabulate()
     V2.5.7  Fix #17 run_tagger.sh missing
+    V2.5.8  Test Dev git banch
 """
 
 import shutil
@@ -119,7 +120,7 @@ import stat
 # from unidecode import unidecode
 
 # --- Variable Globales -----------------------------------------------------------------------
-VERSION = "V2.5.7"
+VERSION = "V2.5.8"
 DISCOGS_API_URL = "https://api.discogs.com"
 # Le token Discogs n'est plus code en dur : il est fourni par la variable d'environnement
 # DISCOGS_TOKEN (cas du lancement depuis tagger_gui.py) ou TOKEN_DISCOGS (optionnelle) ou saisi via une boite de dialogue
